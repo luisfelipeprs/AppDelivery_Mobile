@@ -93,7 +93,7 @@ export default function ProductsLayout () {
           headerTitleStyle: {
             color: '#fff', // Cor do texto do cabeçalho
           },
-          headerShown: true,
+          headerShown: false,
         }}
       />
 
