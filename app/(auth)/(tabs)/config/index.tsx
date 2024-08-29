@@ -27,12 +27,6 @@ export default function ConfigScreen () {
           <Text className="ml-3 text-lg font-semibold text-gray-800">Ver Entregas</Text>
         </TouchableOpacity>
 
-        {/* Section: Conta */}
-        <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/availableOrders') }}>
-          <FontAwesome name="user" size={24} color="#ff0000" />
-          <Text className="ml-3 text-lg font-semibold text-gray-800">Minha Conta</Text>
-        </TouchableOpacity>
-
         {/* Section: Configurações de Entrega */}
         <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/orderAcceptanceScreen') }}>
           <FontAwesome name="cogs" size={24} color="#ff0000" />
@@ -59,6 +53,18 @@ export default function ConfigScreen () {
 
         {/* Section: Configurações de Entrega */}
         <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/accountSettingsScreen') }}>
+          <FontAwesome name="cogs" size={24} color="#ff0000" />
+          <Text className="ml-3 text-lg font-semibold text-gray-800">Configurações de Entrega</Text>
+        </TouchableOpacity>
+
+        {/* Section: Configurações de Entrega */}
+        <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/driverSchedule') }}>
+          <FontAwesome name="cogs" size={24} color="#ff0000" />
+          <Text className="ml-3 text-lg font-semibold text-gray-800">Configurações de Entrega</Text>
+        </TouchableOpacity>
+
+        {/* Section: Configurações de Entrega */}
+        <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/mapsLocation') }}>
           <FontAwesome name="cogs" size={24} color="#ff0000" />
           <Text className="ml-3 text-lg font-semibold text-gray-800">Configurações de Entrega</Text>
         </TouchableOpacity>

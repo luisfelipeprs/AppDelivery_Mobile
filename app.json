@@ -13,9 +13,27 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app needs access to your location to show nearby places.",
+        "NSLocationAlwaysUsageDescription": "This app needs access to your location to provide location-based services."
+      },
+      "config": {
+        "googleMapsApiKey": "AIzaSyD6s-ANYihojvPFSAhOuIpCKpknzNg6Bts"
+      },
+      "bundleIdentifier": "com.lipepx.exporoutetest"
     },
     "android": {
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyD6s-ANYihojvPFSAhOuIpCKpknzNg6Bts"
+        }
+      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"

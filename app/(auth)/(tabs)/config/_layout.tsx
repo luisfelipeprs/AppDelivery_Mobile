@@ -4,6 +4,7 @@ import { Redirect, Stack } from 'expo-router';
 export default function ProductsLayout () {
   return (
     <Stack>
+
       <Stack.Screen name="index" options={{
         title: 'Config',
         headerStyle: {
@@ -28,17 +29,6 @@ export default function ProductsLayout () {
 
       <Stack.Screen name="cadastroScreen" options={{
         title: 'cadastroScreen',
-        headerStyle: {
-          backgroundColor: '#ff0000', // Cor do cabeçalho
-        },
-        headerTitleStyle: {
-          color: '#fff', // Cor do texto do cabeçalho
-        },
-        headerShown: true,
-      }} />
-
-      <Stack.Screen name="availableOrders" options={{
-        title: 'availableOrders',
         headerStyle: {
           backgroundColor: '#ff0000', // Cor do cabeçalho
         },
@@ -113,6 +103,29 @@ export default function ProductsLayout () {
         },
         headerShown: true,
       }} />
+
+      <Stack.Screen name="driverSchedule" options={{
+        title: 'driverSchedule',
+        headerStyle: {
+          backgroundColor: '#ff0000', // Cor do cabeçalho
+        },
+        headerTitleStyle: {
+          color: '#fff', // Cor do texto do cabeçalho
+        },
+        headerShown: true,
+      }} />
+
+      <Stack.Screen name="mapsLocation" options={{
+        title: 'mapsLocation',
+        headerStyle: {
+          backgroundColor: '#ff0000', // Cor do cabeçalho
+        },
+        headerTitleStyle: {
+          color: '#fff', // Cor do texto do cabeçalho
+        },
+        headerShown: true,
+      }} />
+
     </Stack>
   )
 }
