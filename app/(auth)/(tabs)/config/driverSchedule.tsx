@@ -55,20 +55,20 @@ export default function DriverSchedule () {
       <View className="flex-row justify-between mb-4">
         <TouchableOpacity
           className={`flex-1 p-3 mr-2 rounded-lg 
-            ${selectedShift === 'morning' ? 'bg-red-500' : 'bg-red-200'}`
+            ${selectedShift === 'morning' ? 'bg-[#130a8f]' : 'bg-red-200'}`
           }
           onPress={() => setSelectedShift('morning')}
         >
           <Text className="text-center text-white font-semibold">Manhã</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          className={`flex-1 p-3 mr-2 rounded-lg ${selectedShift === 'afternoon' ? 'bg-red-500' : 'bg-red-200'}`}
+          className={`flex-1 p-3 mr-2 rounded-lg ${selectedShift === 'afternoon' ? 'bg-[#130a8f]' : 'bg-red-200'}`}
           onPress={() => setSelectedShift('afternoon')}
         >
           <Text className="text-center text-white font-semibold">Tarde</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          className={`flex-1 p-3 rounded-lg ${selectedShift === 'night' ? 'bg-red-500' : 'bg-red-200'}`}
+          className={`flex-1 p-3 rounded-lg ${selectedShift === 'night' ? 'bg-[#130a8f]' : 'bg-red-200'}`}
           onPress={() => setSelectedShift('night')}
         >
           <Text className="text-center text-white font-semibold">Noite</Text>

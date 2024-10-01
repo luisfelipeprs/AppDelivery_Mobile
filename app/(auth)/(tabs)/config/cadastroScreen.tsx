@@ -1,37 +1,66 @@
+
+// Código do CadastroScreen
 import React, { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View, SafeAreaView } from 'react-native';
 import EmpresaForm from '@/components/EmpresaForm';
 import EntregadorForm from '@/components/EntregadorForm';
+import UsuarioForm from '@/components/UsuarioForm';
 
-export default function cadastroScreen () {
-  const [tipoCadastro, setTipoCadastro] = useState<'empresa' | 'entregador'>('empresa');
+export default function CadastroScreen () {
+  const [tipoCadastro, setTipoCadastro] = useState<'empresa' | 'entregador' | 'usuario'>('empresa');
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      <ScrollView className="p-4">
-        <View className="mb-6">
-          <Text className="text-3xl font-bold text-gray-900 mb-6">Cadastro</Text>
-          <Text className="text-lg text-gray-600 mb-8">Escolha o tipo de cadastro</Text>
-          <View className="flex-row justify-around">
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
+      <ScrollView contentContainerStyle={{ padding: 16 }}>
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#333', marginBottom: 16 }}>
+            Cadastro
+          </Text>
+          <Text style={{ fontSize: 16, color: '#666', marginBottom: 16 }}>
+            Escolha o tipo de cadastro
+          </Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
             <TouchableOpacity
               onPress={() => setTipoCadastro('empresa')}
-              className={`p-4 rounded-lg ${tipoCadastro === 'empresa' ? 'bg-red-600' : 'bg-gray-200'}`}
+              style={{
+                padding: 16,
+                borderRadius: 8,
+                backgroundColor: tipoCadastro === 'empresa' ? '#f0b429' : '#f1f1f1',
+              }}
             >
-              <Text className={`text-lg ${tipoCadastro === 'empresa' ? 'text-white' : 'text-gray-700'}`}>
+              <Text style={{ fontSize: 16, color: tipoCadastro === 'empresa' ? '#fff' : '#333' }}>
                 Empresa
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setTipoCadastro('entregador')}
-              className={`p-4 rounded-lg ${tipoCadastro === 'entregador' ? 'bg-red-600' : 'bg-gray-200'}`}
+              style={{
+                padding: 16,
+                borderRadius: 8,
+                backgroundColor: tipoCadastro === 'entregador' ? '#f0b429' : '#f1f1f1',
+              }}
             >
-              <Text className={`text-lg ${tipoCadastro === 'entregador' ? 'text-white' : 'text-gray-700'}`}>
+              <Text style={{ fontSize: 16, color: tipoCadastro === 'entregador' ? '#fff' : '#333' }}>
                 Entregador
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setTipoCadastro('usuario')}
+              style={{
+                padding: 16,
+                borderRadius: 8,
+                backgroundColor: tipoCadastro === 'usuario' ? '#f0b429' : '#f1f1f1',
+              }}
+            >
+              <Text style={{ fontSize: 16, color: tipoCadastro === 'usuario' ? '#fff' : '#333' }}>
+                Usuário
               </Text>
             </TouchableOpacity>
           </View>
         </View>
-        {tipoCadastro === 'empresa' ? <EmpresaForm /> : <EntregadorForm />}
+        {tipoCadastro === 'empresa' && <EmpresaForm />}
+        {tipoCadastro === 'entregador' && <EntregadorForm />}
+        {tipoCadastro === 'usuario' && <UsuarioForm />}
       </ScrollView>
     </SafeAreaView>
   );

@@ -35,7 +35,7 @@ export default function userEvaluationReporting () {
           </View>
 
           {/* Botão para enviar a avaliação */}
-          <TouchableOpacity className={"bg-red-500 p-3 rounded-lg mt-4"}>
+          <TouchableOpacity className={"bg-[#f0b429] p-3 rounded-lg mt-4"}>
             <Text className={"text-white text-center font-semibold"}>Enviar Avaliação</Text>
           </TouchableOpacity>
         </View>
@@ -66,7 +66,7 @@ export default function userEvaluationReporting () {
           </View>
 
           {/* Botão para enviar a denúncia */}
-          <TouchableOpacity className={"bg-red-500 p-3 rounded-lg mt-4"}>
+          <TouchableOpacity className={"bg-[#f0b429] p-3 rounded-lg mt-4"}>
             <Text className={"text-white text-center font-semibold"}>Enviar Denúncia</Text>
           </TouchableOpacity>
         </View>

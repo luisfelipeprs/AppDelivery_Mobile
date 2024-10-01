@@ -4,19 +4,22 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 import { Text } from '@/components/Themed';
 import { TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
 
 export default function ProductsLayout () {
+  const router = useRouter();
+
   return (
     <Tabs>
       <Tabs.Screen
-        name="index"
+        name="orderOfService"
         options={{
-          title: 'Home',
+          title: 'OrderOfService',
           tabBarIcon: ({ color, focused }) => (
-            <FontAwesome size={28} name="home" color={focused ? '#ff0000' : '#ff7272'} />
+            <FontAwesome size={28} name="home" color={focused ? '#130a8f' : '#2b22b1'} />
           ),
           tabBarLabel: ({ focused }) => (
-            <Text style={{ color: focused ? '#ff0000' : '#ff7272', fontSize: 12 }}>
+            <Text style={{ color: focused ? '#130a8f' : '#2b22b1', fontSize: 12 }}>
               Home
             </Text>
           ),
@@ -26,12 +29,24 @@ export default function ProductsLayout () {
       />
 
       <Tabs.Screen
-        name="orderOfService"
+        name="index"
         options={{
-          title: 'OrderOfService',
+          title: 'Maps',
           tabBarIcon: ({ color, focused }) => (
-            <FontAwesome size={28} name="gear" color={focused ? '#ff0000' : '#ff7272'} />
+            <FontAwesome size={28} name="gear" color={focused ? '#130a8f' : '#2b22b1'} />
           ),
+          headerShown: true,
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.push('config')} style={{ paddingLeft: 15 }}>
+              <FontAwesome name="bars" size={24} color="white" />
+            </TouchableOpacity>
+          ),
+          headerStyle: {
+            backgroundColor: '#130a8f', // Cor do cabeçalho
+          },
+          headerTitleStyle: {
+            color: '#fff', // Cor do texto do cabeçalho
+          },
           // tabBarIcon: ({ color }) => <FontAwesome size={28} name="gear" color={color} />,
           tabBarButton: (props) => (
             <View
@@ -40,7 +55,7 @@ export default function ProductsLayout () {
                 height: 60,
                 width: 60,
                 borderRadius: 35,
-                backgroundColor: props.accessibilityState?.selected ? '#ff0000' : '#ff7272',
+                backgroundColor: props.accessibilityState?.selected ? '#130a8f' : '#2b22b1',
                 justifyContent: 'center',
                 alignItems: 'center',
                 shadowColor: '#000',
@@ -60,17 +75,10 @@ export default function ProductsLayout () {
                   borderRadius: 35,
                 }}
               >
-                <FontAwesome size={28} name="cart-plus" color="#FFF" />
+                <FontAwesome size={28} name="motorcycle" color="#FFF" />
               </TouchableOpacity>
             </View>
           ),
-          headerStyle: {
-            backgroundColor: '#ff0000', // Cor do cabeçalho
-          },
-          headerTitleStyle: {
-            color: '#fff', // Cor do texto do cabeçalho
-          },
-          headerShown: true,
         }}
       />
 
@@ -80,15 +88,15 @@ export default function ProductsLayout () {
         options={{
           title: 'Config',
           tabBarIcon: ({ color, focused }) => (
-            <FontAwesome size={28} name="gear" color={focused ? '#ff0000' : '#ff7272'} />
+            <FontAwesome size={28} name="gear" color={focused ? '#130a8f' : '#2b22b1'} />
           ),
           tabBarLabel: ({ focused }) => (
-            <Text style={{ color: focused ? '#ff0000' : '#ff7272', fontSize: 12 }}>
+            <Text style={{ color: focused ? '#130a8f' : '#2b22b1', fontSize: 12 }}>
               Config
             </Text>
           ),
           headerStyle: {
-            backgroundColor: '#ff0000', // Cor do cabeçalho
+            backgroundColor: '#130a8f', // Cor do cabeçalho
           },
           headerTitleStyle: {
             color: '#fff', // Cor do texto do cabeçalho

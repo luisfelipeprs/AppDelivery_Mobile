@@ -1,114 +1,452 @@
-import React from "react";
-import { ScrollView, Text, TouchableOpacity, View, Image, TextInput, Dimensions, SafeAreaView } from "react-native";
-import { AntDesign, FontAwesome } from "@expo/vector-icons";
-import { useSession } from "@/app/ctx";
-import { router } from 'expo-router';
+import React, { useState, useRef, useEffect } from 'react';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapViewDirections from 'react-native-maps-directions';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import axios from 'axios';
+import * as Location from 'expo-location';
 
-export default function HomeScreen () {
-  const { session, isLoading } = useSession();
-  const screenWidth = Dimensions.get('window').width;
+const GOOGLE_MAPS_APIKEY = 'AIzaSyD6s-ANYihojvPFSAhOuIpCKpknzNg6Bts';
 
-  if (isLoading) {
-    return <Text className="text-center text-lg mt-4">Carregando...</Text>;
-  }
+interface Coordinates {
+  latitude: number;
+  longitude: number;
+}
+
+const DeliveryRouteScreen: React.FC = () => {
+  const [origin, setOrigin] = useState<Coordinates | null>(null);
+  const [destination, setDestination] = useState<Coordinates | null>(null);
+  const [stops, setStops] = useState<(Coordinates | null)[]>([]);
+  const [routeVisible, setRouteVisible] = useState<boolean>(false);
+  const [deliveryStarted, setDeliveryStarted] = useState<boolean>(false);
+  const [currentLocation, setCurrentLocation] = useState<Coordinates | null>(null);
+  const [distance, setDistance] = useState<number | null>(null);
+  const [duration, setDuration] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [stopDistances, setStopDistances] = useState<number[]>([]);
+  const [stopDurations, setStopDurations] = useState<number[]>([]);
+  const [isVisible, setIsVisible] = useState<boolean>(false);
+  const [estimatedArrivalTimes, setEstimatedArrivalTimes] = useState<string[]>([]);
+  const [deliveryPosition, setDeliveryPosition] = useState<Coordinates | null>(null); // Adicionado
+  const mapRef = useRef<MapView>(null);
+  const deliveryIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const getLocation = async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permissão negada', 'Precisamos da permissão para acessar sua localização.');
+        return;
+      }
+      const location = await Location.getCurrentPositionAsync({});
+      setCurrentLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+    };
+    getLocation();
+  }, []);
+
+  useEffect(() => {
+    if (origin && destination && routeVisible && mapRef.current) {
+      const points = [origin, ...stops.filter(Boolean), destination];
+      mapRef.current.fitToCoordinates(points as Coordinates[], {
+        edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+        animated: true,
+      });
+    }
+  }, [origin, destination, stops, routeVisible]);
+
+  useEffect(() => {
+    if (deliveryStarted && deliveryPosition) {
+      deliveryIntervalRef.current = setInterval(async () => {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === 'granted') {
+          const location = await Location.getCurrentPositionAsync({});
+          setDeliveryPosition({
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          });
+        }
+      }, 5000); // Atualizar a cada 5 segundos
+    } else {
+      if (deliveryIntervalRef.current) {
+        clearInterval(deliveryIntervalRef.current);
+        deliveryIntervalRef.current = null;
+      }
+    }
+  }, [deliveryStarted, deliveryPosition]);
+
+  useEffect(() => {
+    if (deliveryPosition) {
+      mapRef.current?.animateCamera({
+        center: deliveryPosition,
+        pitch: 0,
+        heading: 0,
+        zoom: 15,
+      });
+    }
+  }, [deliveryPosition]);
+
+  const handleGenerateRoute = async () => {
+    if (!origin || !destination) {
+      Alert.alert('Erro', 'Defina o ponto de origem e o destino.');
+      return;
+    }
+
+    try {
+      const distances: number[] = [];
+      const durations: number[] = [];
+      const arrivalTimes: string[] = [];
+
+      const points = [origin, ...stops.filter(Boolean), destination];
+
+      // Calcular a distância e duração de cada trecho
+      let cumulativeDuration = 0; // para calcular a estimativa de chegada
+      for (let i = 0; i < points.length - 1; i++) {
+        const start = points[i];
+        const end = points[i + 1];
+
+        const { distance, duration } = await calculateDistanceAndDuration(start!, end!);
+        distances.push(distance);
+        durations.push(duration);
+
+        cumulativeDuration += duration;
+
+        // Calcular o tempo de chegada para cada parada
+        const estimatedArrivalTime = new Date();
+        estimatedArrivalTime.setMinutes(estimatedArrivalTime.getMinutes() + cumulativeDuration);
+
+        arrivalTimes.push(estimatedArrivalTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      }
+
+      setStopDistances(distances);
+      setStopDurations(durations);
+      setDistance(distances.reduce((a, b) => a + b, 0));
+      setDuration(durations.reduce((a, b) => a + b, 0));
+      setEstimatedArrivalTimes(arrivalTimes);
+      setRouteVisible(true);
+    } catch (error) {
+      console.error(error);
+      setError('Não foi possível calcular a rota.');
+    }
+  };
+
+  const toggleVisibility = () => {
+    setIsVisible(!isVisible);
+  };
+
+  const handleStartDelivery = () => {
+    if (!currentLocation) {
+      Alert.alert('Erro', 'Não foi possível obter sua localização atual.');
+      return;
+    }
+    setDeliveryStarted(true);
+    setDeliveryPosition(currentLocation);
+    toggleVisibility();
+  };
+
+  const handlePlaceSelect = async (data: any, details: any, setLocation: React.Dispatch<React.SetStateAction<Coordinates | null>>) => {
+    const address = details?.formatted_address || data.description;
+    const coords = await getCoordinatesFromAddress(address);
+    if (coords) {
+      setLocation(coords);
+    } else {
+      setError('Não foi possível obter as coordenadas para o endereço fornecido.');
+    }
+  };
+
+  const getCoordinatesFromAddress = async (address: string): Promise<Coordinates | null> => {
+    try {
+      const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json`, {
+        params: {
+          address,
+          key: GOOGLE_MAPS_APIKEY,
+        },
+      });
+      const location = response.data.results[0]?.geometry?.location;
+      if (location) {
+        return {
+          latitude: location.lat,
+          longitude: location.lng,
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
+  const calculateDistanceAndDuration = async (origin: Coordinates, destination: Coordinates): Promise<{ distance: number; duration: number }> => {
+    try {
+      const response = await axios.get(`https://maps.googleapis.com/maps/api/directions/json`, {
+        params: {
+          origin: `${origin.latitude},${origin.longitude}`,
+          destination: `${destination.latitude},${destination.longitude}`,
+          key: GOOGLE_MAPS_APIKEY,
+        },
+      });
+      const route = response.data.routes[0];
+      const distance = route.legs[0].distance.value / 1000; // em km
+      const duration = route.legs[0].duration.value / 60; // em minutos
+      return { distance, duration };
+    } catch (error) {
+      console.error(error);
+      return { distance: 0, duration: 0 };
+    }
+  };
+
+  const addStop = () => {
+    if (stops.length < 3) {
+      setStops([...stops, null]);
+    }
+  };
+
+  const removeStop = (index: number) => {
+    const updatedStops = stops.filter((_, i) => i !== index);
+    setStops(updatedStops);
+  };
+
+  const handleStopChange = async (data: any, details: any, index: number) => {
+    const address = details?.formatted_address || data.description;
+    const coords = await getCoordinatesFromAddress(address);
+    if (coords) {
+      const updatedStops = [...stops];
+      updatedStops[index] = coords;
+      setStops(updatedStops);
+    } else {
+      setError('Não foi possível obter as coordenadas para o endereço fornecido.');
+    }
+  };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
-      <View className="flex-1 mt-4">
-        {/* Header */}
-        <View className="flex-row items-center justify-between px-4 py-6 bg-gradient-to-r from-red-600 rounded-md  shadow-lg rounded-b-3xl">
-          <View className="flex-1 flex-row bg-[#ff0000] m-auto px-4 rounded-md">
-            <TouchableOpacity className=" m-auto">
-              <FontAwesome name="user-circle" size={38} color="#ffffff" />
-            </TouchableOpacity>
-            <View className="px-4 py-3 rounded-lg flex-1">
-              <Text className="text-lg font-semibold text-white">Local de Entrega:</Text>
-              <TouchableOpacity className="flex-row items-center mt-1">
-                <Text className="text-xl font-bold text-white">São Paulo, SP</Text>
-                <AntDesign name="down" size={16} color="white" style={{ marginLeft: 5 }} />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-
-        {/* Search Bar */}
-        <View className="px-4 py-2 bg-white mx-4 mt-2 rounded-lg shadow-md border border-gray-400 relative">
-          <TextInput
-            placeholder="Buscar restaurantes, comidas..."
-            className="pl-10 pr-4 py-1"
-            placeholderTextColor="gray"
+    <View style={styles.container}>
+      <MapView
+        provider={PROVIDER_GOOGLE}
+        style={styles.map}
+        ref={mapRef}
+        initialRegion={{
+          latitude: origin?.latitude || 37.78825,
+          longitude: origin?.longitude || -122.4324,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        }}
+      >
+        {origin && <Marker coordinate={origin} title="Início" />}
+        {destination && <Marker coordinate={destination} title="Destino" />}
+        {stops.map((stop, index) => stop && <Marker key={index} coordinate={stop} title={`Parada ${index + 1}`} />)}
+        {routeVisible && origin && destination && (
+          <MapViewDirections
+            origin={origin}
+            destination={destination}
+            waypoints={stops.filter(Boolean) as Coordinates[]}
+            apikey={GOOGLE_MAPS_APIKEY}
+            strokeWidth={3}
+            strokeColor="hotpink"
+            optimizeWaypoints={true}
+            onReady={result => {
+              setDistance(result.distance);
+              setDuration(result.duration);
+            }}
+            onError={(errorMessage) => {
+              setError(errorMessage);
+            }}
           />
-          <View className="absolute left-4 top-1/2 transform -translate-y-1/2">
-            <AntDesign name="search1" size={20} color="gray" />
+        )}
+        {deliveryPosition && (
+          <Marker coordinate={deliveryPosition} title="Posição do Veículo" pinColor="blue" />
+        )}
+      </MapView>
+
+      <View style={styles.menuContainer}>
+        <GooglePlacesAutocomplete
+          placeholder="Endereço inicial"
+          fetchDetails={true}
+          onPress={(data, details = null) => handlePlaceSelect(data, details, setOrigin)}
+          query={{
+            key: GOOGLE_MAPS_APIKEY,
+            language: 'pt',
+          }}
+          styles={autocompleteStyles}
+        />
+
+        {stops.map((stop, index) => (
+          <View key={index} style={styles.stopContainer}>
+            <GooglePlacesAutocomplete
+              placeholder={`Parada ${index + 1}`}
+              fetchDetails={true}
+              onPress={(data, details = null) => handleStopChange(data, details, index)}
+              query={{
+                key: GOOGLE_MAPS_APIKEY,
+                language: 'pt',
+              }}
+              styles={autocompleteStyles}
+            />
+            <TouchableOpacity style={styles.removeButton} onPress={() => removeStop(index)}>
+              <Text style={styles.removeButtonText}>×</Text>
+            </TouchableOpacity>
           </View>
-        </View>
+        ))}
 
-        {/* Main Content */}
-        <ScrollView className="flex-1 mt-3 px-4">
-          {/* Featured Restaurants */}
-          <Text className="text-xl font-semibold mb-4 text-gray-900">Anúncios</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-6">
-            <TouchableOpacity className="mr-4 w-60">
-              <View className="h-40 rounded-lg overflow-hidden shadow-lg">
-                <Image
-                  source={{ uri: "data:image/png;base64,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" }}
-                  className="h-full w-full"
-                  resizeMode="cover"
-                  width={600}
-                  height={400}
-                />
-              </View>
-              <Text className="mt-2 font-medium text-gray-900">Desconto de 50% em ...</Text>
-              <Text className="text-sm text-gray-700">Valido apenas para x, y e z</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="mr-4 w-60">
-              <View className="h-40 rounded-lg overflow-hidden shadow-lg">
-                <Image
-                  source={{ uri: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALAAAACUCAMAAAAEVFNMAAAA81BMVEX///+1ACf/4AC0ACOvAACyABe0ACGyACizAByzAB6yABn//P3/4gCxABCyABT/3gD/6AD99vj46Ov///qxAArw09jiqLH14OT/7AD77vH02t/VgY3ls7r/9rb/6mP/5Cz/+MX//u3//NrTeYftxs3bl5///OL/5kf/8Y7/+tH/+L//61nDTVneoKjaj5v/7nq7MT//9JrDQVbNY3S7Hzm/Okv50QbYfRfinBL/9avJUmbFXGS3JTDQcH2/KUPxx0bpvrTopADJXR29LR7RdnLvugbUgDz/7D/BPB3di03z0sXkqHbNVArISxrTcRnnrQ/fixAoSubbAAAMlUlEQVR4nO1baXeiyhYNqWKexIATZDBihg4aEtSkVXJf6/N13pDh//+aV1VMDihexE4+uNfKWq4Isutwzj5DwdHRAQcccMABBxxwwAEHHHDAAQd8DZqXP36eXtw2T76ayHa4+nktqeqxKp2fPVw0v5pNNk6vjxNIZw+XX00oAz+Pl3B+f/XVnDaB8D0/uzk9PX24vzsPzHz/fa18iymeXYTR1rz9eSeRFTx8UyufnCF29/OB1rw4I1a+Pv0yUptwoSL7LovZ7R2hfLalYIha2e76w6FnWmWtcIZLQAIhrd78k1NsZfX3j+wfKBtWe8hCqCu0DCHl2/U9sExwiXjdpH3RvJGIJ288WzMq5sjldZqhQjAyNbLEvVANcIMMvEYQbok6r7hLBLFh+f0xR3Mx2QCA5h1rb3xPkLPeraN0Qox8vboerWxU/BfkBQyg0iDAF6u8H8JXyIr36+uHn1jyrm8X/le2Oy2H12U+lWsITnY6e6F8iQjfbCh4LjDj89jGmt31nLGgCOmWXbCy4LT3EH6Xmy2MYg8L3PktUS7zkdJlgc8mG4DXqW656PhrIsK/N6pt804qqX/9gygXvS3XEAzsdY2CGWO5vdh4RPP+12TKyzSTTTDFyrJbMOUHHFUbj2iMeDYP14gyPfYbBRJuYuXalB1sWtmBLgaQoW8Ul7Gxic/Xlzl2T9iRL4aOMnZRlJtnmxhXHXo7K2Z9r4x9u0jGa8RY7OrB9XjAALA+7MCY5zI4A0F/KcjKzXtS/V6kUK72CEm+98/n2ce/+uuszfftisNnip4AnWIydvOeFGYpXVEHEuOwlnhXKv221zFWuihjWw7MdB9aGFWKSH8np+fHqZQ9GV8GtlFsqsfSid1L9Qr+hZDQ7H4mZcBx/XYR2a95HzSfd6dX857RwxUOA9CnU9SYXGmtVEIwriZtj5KzEgwP2U61AMo/zqSwxT+9jDhrPL46/Yg+Yj8/OWqnaZwyTGJJs3xWz2CMKPfbBeSS5sWdpJIW//rsJhj/aDJgKRYRPsFqfXd01OZS7rKwoFea4UM9K/w4uW8Wkf6ubs7j+Q8eVFyOpwivE+Iv0o+jVJdQ/GWxMvxxZuXByEqrWoAzN0/vr6WItCodq4OBKtXICh5OjtKCDoxTEoJhutmVHeRNu4j4u7q4Qe6sBnYOUar9Pj05qg5TygrdDE7TrPlIEo3uOIswxeisWUj6Ozm5ung4O5eQqaUaQmnw69//qZcr/ZSQY7iQpw1dc15i7fEWxTNDj4dFZWzE++r2x3//N3l75VgW6AqEaX6JNRpD7AkMuseN6B7XvS2LEBo+FjnJsF8oliXlcLq96MfwYiQnMpCNynU7sx6KodAjqzDKor/RUIAOc0bDDQSPkd2WQc6Tt+WLKTOjSlHNn52ivAkELzSN9TgWgnqNoWXPODLg32v/OLlXSJGBkKYMyXXa8XHVzogJg1KHfnIWo+gKz8t6lszx0C0kY6Po33QVZ+4adasfZmWgRPeFg6zfrlhWpevwqUE7v3qUsQugrPU3mVjuzvte2V9cHQ9fKmWNHCHWDZPbtHZCWViUxnywN4Ud0BdltKIkZgS0W1n4su6DjRFBYZ2RE2nMifJoE2PFsY35LqKd1GrKSnsvWm5mS0ukcTfKnY1m4ceu41fi+keL9Qy2Uu6uQWXZmEjjbg1r2VkXLQBHPmB4Wul1YkpuMNbU/dQfM7aZIBFp3KFhbacHCy+7bKRVPPQje5rEg2h/7rbWy4mxK9sN6GTo5c/Y9bRrIF8zjVayFL0bmsTCJuTm9M7ujkZ+LFj1jSExT5n3rbxWbq2YGEDFRPV3I+ngmF5YRRi4TJPjNk9E1Twt0Eo/cksLxMsHAtTXj5oBDR5z7j2Ue0vjdjDukMWL3aRkgKGGVRFhGDtw4zFM0gIfMq470Y9xY69remNlvY9wSMjzOIZoLpUywA0Vq5yMsvTQGsjCQIiUrjqMz5RH4Q02Q+UTglLYHm2SOg46eZo/e7wU20KU4YxemAiZcegSFqD0VnSin8gyUKIDAgcT+uGqqhsZU7KTI19ry1Um70Zj6saLjMs0RjbDJXQFhoq+tOadP6r1y8E/IbZvGxejGc2JbubII/bKr8S9stZ2gCwzURFQHnH0KPxcd7mFU8ITiOjQQ/TRhLCnHWnO5tTk5nAKcaXKlONUgTfCOvFgErUaSlR0Vhbui+6F/yZjUL0buDtEjhG1U2sMLeTJeytVJsOk/ozoyYAKw68+WrBcnPsIYSwqFY4SWLRSjzgxA2k9dQSj50rUj8t6z4M0kUS9HdOPGml24fIwvCca2TjD4wF7rOMeq9rHQUC7Xa3RclMmH1QuwtaKXHLjzko0GDyDqvrQPTqLYhgZKgg6HjmvWCFlU4dHZWqviz1V7K5W3/Qo11C57KyIDy+3lhTHwKMLwQvWobUWCAv9MBRD7yKigZfW6HOy7pOS0vbdVZ/gOke5kFZl0uP5DkGs9PAxQhhc9eFizEVz4WgbQuiSc+0XKA+JDpY9PqWWY5ycU/uyk7IdzkDBtKt1TRPrVXsIyRF0RHjhnjCRcmtRngDwpWt1PMiNiK80TCF1UAvb6xhloZ06amB0oT9qmabfV0L34zwtJDxvYSWSfyO565yuQ+iQKUq17aY3qQyXuzAur9tG4mlaoenY/rwTuMmCDzNspP6dObszMBhHiO0+veZxBtjNyxc5X1bXGwBEN7+SRDyItxWqSVrjaZfoTN2i4LqnL7jeDp1Hldpug5yPCs2YG6PEdopXAfRgDFG3HAhlfU0BJO+yhSOamdsXBEoraj7CgQond+PK4yVchC4Hmwa2p0OvYrX7qcOtXHVEAiN922sZcfNxZPVkmqblXpITzWDnj+aDGYDh8XqfzOG1Np/y44q5C1+Uh7brx5KOuV5p+eZca2YRhwCuT0acqCdU+B5mjo/opO1H7Lh1U00bwqcArunFjD52CECZmKBh9lCtQ2S24qPoq69WmUknkBfG2nBeAJfuetWwggKuZ9S7LlYyhkOyVkF6jEy+3Iihhe++NW33tvIKwU15cKZBRYyAAhWdeAA9DEyL70lnmTDczYNDxo/yNpMQxV32Cs3C7R9LMHccqpQaLmBkpHDLlRqzqwcHqLbSy+wlcMziXqfh47Eay7w/Pz+9JpS5F2xhCFHi1rylANHNYp6vEA2PU7L1DShjL2qcNNsf406OfRuUENRnJmaMe9EGKYuXe9HULcucaPjuFkM9oMPe0Gy3TY8Kt58nakmdfcyk2ixmHO9DNZYL7oXx3M4wur2sLQAMXkH1GIwGWtNZbfDOsPznoPRMYX8mvEY4cYi2s9LmFmdgDLFqMn9zq4idSLUnFhN9Lg1eWeptSigL45FpeuNl9VEeC+WLgaRUyJ5PzxH+rA3IQ3vs27H6zk6PpV9TgDgDTpZXZ4Kw6IcgMaptR96eMvtcGxBe7JuECH/WSjX1eUKlP3coe/t5zrtqvcBtKbNPNXVKLPxZUidALc0+ajX14w2kUAbpY48igLfntqPMvg5qv3DeeB2UZgD5x4SdzEq12XS6auV43LUPiNaI2jDkncMTErT3ydOgJE2miPQrJv/x9CZ9THh2kTOzv8foMeqWD7d5phR8HtdKx7Wa9MR+SiVp9ol0AjDPUk2avYN5ypyz7/dBNNTkb1NkTD4GkvoxYaez0mBQKw0QZZT9ZseEcnLYuvq0UBhe9rNJOFkwyJbsU6n0SiHfKE2QdqjM9Fkt1T4SA/f+AF8Em5TkmZzRHzOozRBt/vOTmaq1D/Rx+jx4TwqMP2FgDM0whW3SH0sPpHeS83A2kdRnXL+9xrdHcPb7etA8xGqLz3yaEWH6FhzEcqqklkrHH3MlJyVXsi9UIMpmn84W5pAeKSveZmqtJCQ1ct7xX240Ov0t0x/OIb8oFkw+nhMDK7nHf/lR7fS2a1ffS7U35Mgsz8WEGfbPefActEqf2+INIOr1aTkt55+v7kx5tMUrFewyX57d+0uPa1G3hltl7O9hYAKcsbdxjDkD7zb+KwD2xv36FdBfamAC0Ta5bSYZBCBtZPTHoRnbDV+oIsZ/BaHqj9ftYiwYWP/TSW49Gt1+di6B38XABI32SwZlAL5aIpZQbrMbKed6lmO/0NoOv3bCnGyOfCeUK468hrLw/QxMULYeYepeyf6GJzvDfkx5/U7xsk/8MoiWzy6PBfYy/isOmu0vPm+gDL+aUhY0w4NJwwrg9/XgBEbLDbdLgFzQFsy+gfceaJ7T5QIe1/8zEBvtx95LcS9q/wmI2vdMGAcccMABBxxwwAEHHHBAXvwfLkUjThC34LYAAAAASUVORK5CYII=" }}
-                  // source={{ uri: "https://via.placeholder.com/600x400" }}
-                  className="h-full w-full"
-                  resizeMode="cover"
-                  width={600}
-                  height={400}
-                />
-              </View>
-              <Text className="mt-2 font-medium text-gray-900">R$ 7,00 de taxa para estudante</Text>
-              <Text className="text-sm text-gray-700">Crie conta e faça upload da sua carterinha</Text>
-            </TouchableOpacity>
-            {/* Adicione mais restaurantes aqui */}
-          </ScrollView>
+        <TouchableOpacity style={[styles.addButton, stops.length >= 3 && styles.addButtonDisabled]} onPress={addStop} disabled={stops.length >= 3}>
+          <Text style={styles.addButtonText}>+ Adicionar Parada</Text>
+        </TouchableOpacity>
 
-          {/* Categories */}
-          <Text className="text-xl font-semibold mb-4 text-gray-900">Categorias</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-1 gap-1">
-            <TouchableOpacity className="items-center w-24" onPress={() => router.push('Categories')}>
-              <View className="bg-[#ff0000] p-4 rounded-full shadow-md">
-                <FontAwesome name="coffee" size={28} color="white" />
-              </View>
-              <Text className="mt-2 text-sm text-center text-gray-900">Cafés</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="items-center w-24" onPress={() => router.push('Categories')}>
-              <View className="bg-[#ee0000] p-4 rounded-full shadow-md">
-                <FontAwesome name="cutlery" size={28} color="white" />
-              </View>
-              <Text className="mt-2 text-sm text-center text-gray-900">Almoços</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="items-center w-24" onPress={() => router.push('Categories')}>
-              <View className="bg-[#dd0000] p-4 rounded-full shadow-md">
-                <AntDesign name="isv" size={28} color="white" />
-              </View>
-              <Text className="mt-2 text-sm text-center text-gray-900">Lanches</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="items-center w-24" onPress={() => router.push('Categories')}>
-              <View className="bg-[#cc0000] p-4 rounded-full shadow-md">
-                <FontAwesome name="beer" size={28} color="white" />
-              </View>
-              <Text className="mt-2 text-sm text-center text-gray-900">Bebidas</Text>
-            </TouchableOpacity>
-            {/* Adicione mais categorias aqui */}
-          </ScrollView>
-        </ScrollView>
+        <GooglePlacesAutocomplete
+          placeholder="Endereço de entrega"
+          fetchDetails={true}
+          onPress={(data, details = null) => handlePlaceSelect(data, details, setDestination)}
+          query={{
+            key: GOOGLE_MAPS_APIKEY,
+            language: 'pt',
+          }}
+          styles={autocompleteStyles}
+        />
+
+        <TouchableOpacity style={styles.generateButton} onPress={handleGenerateRoute}>
+          <Text style={styles.generateButtonText}>Gerar Rota</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.startButton} onPress={handleStartDelivery}>
+          <Text style={styles.startButtonText}>Iniciar Entrega</Text>
+        </TouchableOpacity>
       </View>
-    </SafeAreaView>
+
+      {routeVisible && (
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoText}>Distância Total: {distance ? `${distance.toFixed(2)} km` : 'N/A'}</Text>
+          <Text style={styles.infoText}>Duração Estimada: {duration ? `${duration.toFixed(2)} min` : 'N/A'}</Text>
+          {stops.map((_, index) => (
+            <Text key={index} style={styles.infoText}>
+              Tempo Estimado para Parada {index + 1}: {estimatedArrivalTimes[index] || 'N/A'}
+            </Text>
+          ))}
+        </View>
+      )}
+
+      {error && <Text style={styles.error}>{error}</Text>}
+    </View>
   );
-}
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  map: {
+    flex: 1,
+  },
+  menuContainer: {
+    position: 'absolute',
+    top: 20,
+    left: 10,
+    right: 10,
+    backgroundColor: 'white',
+    padding: 10,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  stopContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  removeButton: {
+    backgroundColor: '#FF3B30',
+    borderRadius: 15,
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  removeButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    lineHeight: 18,
+  },
+  addButton: {
+    marginTop: 10,
+    paddingVertical: 8,
+    backgroundColor: '#007AFF',
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  addButtonDisabled: {
+    backgroundColor: '#d3d3d3',
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  generateButton: {
+    marginTop: 10,
+    paddingVertical: 8,
+    backgroundColor: '#34C759',
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  generateButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  startButton: {
+    marginTop: 10,
+    paddingVertical: 8,
+    backgroundColor: '#FF9500',
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  startButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  infoContainer: {
+    position: 'absolute',
+    bottom: 20,
+    left: 10,
+    right: 10,
+    backgroundColor: 'white',
+    padding: 10,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    alignItems: 'center',
+  },
+  infoText: {
+    fontSize: 16,
+  },
+  error: {
+    position: 'absolute',
+    bottom: 20,
+    left: 10,
+    right: 10,
+    color: '#FF3B30',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+});
+
+const autocompleteStyles = {
+  textInputContainer: {
+    backgroundColor: 'transparent',
+  },
+  textInput: {
+    height: 38,
+    color: '#5d5d5d',
+    fontSize: 16,
+    borderColor: '#d3d3d3',
+    borderWidth: 1,
+    paddingLeft: 10,
+    borderRadius: 5,
+  },
+};
+
+export default DeliveryRouteScreen;

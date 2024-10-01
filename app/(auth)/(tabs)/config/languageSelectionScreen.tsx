@@ -20,7 +20,7 @@ export default function LanguageSelectionScreen () {
         {languages.map(language => (
           <TouchableOpacity
             key={language.code}
-            className={`p-4 mb-4 rounded-lg ${selectedLanguage === language.label ? 'bg-red-500' : 'bg-white'}`}
+            className={`p-4 mb-4 rounded-lg ${selectedLanguage === language.label ? 'bg-[#130a8f]' : 'bg-white'}`}
             onPress={() => setSelectedLanguage(language.label)}
           >
             <Text className={`text-lg font-semibold ${selectedLanguage === language.label ? 'text-white' : 'text-black'}`}>
@@ -33,7 +33,7 @@ export default function LanguageSelectionScreen () {
 
       {/* Botão para Confirmar a Seleção */}
       <View className={"p-4"}>
-        <TouchableOpacity className={"bg-red-500 p-4 rounded-lg"}>
+        <TouchableOpacity className={"bg-[#130a8f] p-4 rounded-lg"}>
           <Text className={"text-center text-white text-lg font-semibold"}>Confirmar Idioma</Text>
         </TouchableOpacity>
       </View>

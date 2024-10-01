@@ -23,7 +23,7 @@ export default function ForgotPassword () {
       <View className="flex-1 justify-center p-6 bg-black/50 backdrop-blur-md">
         <View className="mb-8 items-center">
           <Text className="text-6xl font-extrabold text-white mt-4 tracking-wide">
-            Delivery<Text className="text-red-500">Já</Text>
+            Delivery<Text className="text-[#130a8f]">Já</Text>
           </Text>
         </View>
         <TextInput

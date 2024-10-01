@@ -41,7 +41,7 @@ export default function ReportUserScreen () {
         </View>
 
         {/* Botão para Enviar Denúncia */}
-        <TouchableOpacity className={"bg-red-500 p-4 rounded-lg"}>
+        <TouchableOpacity className={"bg-[#f0b429] p-4 rounded-lg"}>
           <Text className={"text-center text-white text-lg font-semibold"}>Enviar Denúncia</Text>
         </TouchableOpacity>
 

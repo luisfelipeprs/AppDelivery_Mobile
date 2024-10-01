@@ -75,7 +75,7 @@ export default function AccountSettingsScreen () {
         </View>
 
         {/* Seção de Idioma */}
-        <View className={"mb-6"}>
+        {/* <View className={"mb-6"}>
           <Text className={"text-lg font-semibold mb-4"}>Idioma</Text>
 
           <TouchableOpacity className={"bg-gray-100 p-4 mb-2 rounded-lg"}>
@@ -89,11 +89,11 @@ export default function AccountSettingsScreen () {
           <TouchableOpacity className={"bg-gray-100 p-4 mb-2 rounded-lg"}>
             <Text className={"text-lg text-black"}>Español</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         {/* Botão de Sair */}
         <View className={"mb-6"}>
-          <TouchableOpacity className={"bg-red-500 p-4 rounded-lg"}>
+          <TouchableOpacity className={"bg-[#130a8f] p-4 rounded-lg"}>
             <Text className={"text-center text-white text-lg font-semibold"}>Sair da Conta</Text>
           </TouchableOpacity>
         </View>

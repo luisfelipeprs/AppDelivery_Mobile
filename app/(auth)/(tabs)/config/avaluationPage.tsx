@@ -21,7 +21,7 @@ export default function AvaluationPage () {
             className="w-full h-56 rounded-lg"
             resizeMode="cover"
           />
-          <View className="absolute bottom-0 left-0 right-0 bg-[#ff0000] bg-opacity-40 p-2 px-4 rounded-b-lg">
+          <View className="absolute bottom-0 left-0 right-0 bg-[#130a8f] bg-opacity-40 p-2 px-4 rounded-b-lg">
             <Text className="text-white text-xl font-semibold">Nome do Entregador</Text>
             <Text className="text-white text-base">Entrega #12345</Text>
           </View>
@@ -62,7 +62,7 @@ export default function AvaluationPage () {
 
         {/* Botão de Enviar */}
         <TouchableOpacity
-          className="bg-[#ff0000] gap-1 p-4 rounded-lg flex-row items-center justify-center shadow-md"
+          className="bg-[#f0b429] gap-1 p-4 rounded-lg flex-row items-center justify-center shadow-md"
           onPress={() => console.log('Comentário enviado')}
         >
           <Text className="text-white text-lg font-semibold">Enviar Avaliação</Text>

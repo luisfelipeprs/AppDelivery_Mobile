@@ -8,7 +8,7 @@ export default function ProductsLayout () {
       <Stack.Screen name="index" options={{
         title: 'Config',
         headerStyle: {
-          backgroundColor: '#ff0000', // Cor do cabeçalho
+          backgroundColor: '#130a8f', // Cor do cabeçalho
         },
         headerTitleStyle: {
           color: '#fff', // Cor do texto do cabeçalho
@@ -19,7 +19,7 @@ export default function ProductsLayout () {
       <Stack.Screen name="avaluationPage" options={{
         title: 'avaluationPage',
         headerStyle: {
-          backgroundColor: '#ff0000', // Cor do cabeçalho
+          backgroundColor: '#130a8f', // Cor do cabeçalho
         },
         headerTitleStyle: {
           color: '#fff', // Cor do texto do cabeçalho
@@ -30,7 +30,7 @@ export default function ProductsLayout () {
       <Stack.Screen name="cadastroScreen" options={{
         title: 'cadastroScreen',
         headerStyle: {
-          backgroundColor: '#ff0000', // Cor do cabeçalho
+          backgroundColor: '#130a8f', // Cor do cabeçalho
         },
         headerTitleStyle: {
           color: '#fff', // Cor do texto do cabeçalho
@@ -41,7 +41,7 @@ export default function ProductsLayout () {
       <Stack.Screen name="orderAcceptanceScreen" options={{
         title: 'orderAcceptanceScreen',
         headerStyle: {
-          backgroundColor: '#ff0000', // Cor do cabeçalho
+          backgroundColor: '#130a8f', // Cor do cabeçalho
         },
         headerTitleStyle: {
           color: '#fff', // Cor do texto do cabeçalho
@@ -52,7 +52,7 @@ export default function ProductsLayout () {
       <Stack.Screen name="deliveryHistory" options={{
         title: 'deliveryHistory',
         headerStyle: {
-          backgroundColor: '#ff0000', // Cor do cabeçalho
+          backgroundColor: '#130a8f', // Cor do cabeçalho
         },
         headerTitleStyle: {
           color: '#fff', // Cor do texto do cabeçalho
@@ -63,7 +63,7 @@ export default function ProductsLayout () {
       <Stack.Screen name="supportScreen" options={{
         title: 'supportScreen',
         headerStyle: {
-          backgroundColor: '#ff0000', // Cor do cabeçalho
+          backgroundColor: '#130a8f', // Cor do cabeçalho
         },
         headerTitleStyle: {
           color: '#fff', // Cor do texto do cabeçalho
@@ -74,7 +74,7 @@ export default function ProductsLayout () {
       <Stack.Screen name="userEvaluationReporting" options={{
         title: 'userEvaluationReporting',
         headerStyle: {
-          backgroundColor: '#ff0000', // Cor do cabeçalho
+          backgroundColor: '#130a8f', // Cor do cabeçalho
         },
         headerTitleStyle: {
           color: '#fff', // Cor do texto do cabeçalho
@@ -85,7 +85,7 @@ export default function ProductsLayout () {
       <Stack.Screen name="languageSelectionScreen" options={{
         title: 'languageSelectionScreen',
         headerStyle: {
-          backgroundColor: '#ff0000', // Cor do cabeçalho
+          backgroundColor: '#130a8f', // Cor do cabeçalho
         },
         headerTitleStyle: {
           color: '#fff', // Cor do texto do cabeçalho
@@ -96,7 +96,7 @@ export default function ProductsLayout () {
       <Stack.Screen name="accountSettingsScreen" options={{
         title: 'accountSettingsScreen',
         headerStyle: {
-          backgroundColor: '#ff0000', // Cor do cabeçalho
+          backgroundColor: '#130a8f', // Cor do cabeçalho
         },
         headerTitleStyle: {
           color: '#fff', // Cor do texto do cabeçalho
@@ -107,7 +107,7 @@ export default function ProductsLayout () {
       <Stack.Screen name="driverSchedule" options={{
         title: 'driverSchedule',
         headerStyle: {
-          backgroundColor: '#ff0000', // Cor do cabeçalho
+          backgroundColor: '#130a8f', // Cor do cabeçalho
         },
         headerTitleStyle: {
           color: '#fff', // Cor do texto do cabeçalho
@@ -118,7 +118,7 @@ export default function ProductsLayout () {
       <Stack.Screen name="mapsLocation" options={{
         title: 'mapsLocation',
         headerStyle: {
-          backgroundColor: '#ff0000', // Cor do cabeçalho
+          backgroundColor: '#130a8f', // Cor do cabeçalho
         },
         headerTitleStyle: {
           color: '#fff', // Cor do texto do cabeçalho

@@ -175,7 +175,7 @@ export default function EntregadorForm () {
       </View>
 
       <TouchableOpacity
-        style={{ backgroundColor: '#ff0000', paddingVertical: 16, paddingHorizontal: 24, borderRadius: 8, alignItems: 'center' }}
+        style={{ backgroundColor: '#f0b429', paddingVertical: 16, paddingHorizontal: 24, borderRadius: 8, alignItems: 'center' }}
         onPress={handleSubmit(onSubmit)}
       >
         <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>Cadastrar Entregador</Text>

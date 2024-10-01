@@ -69,7 +69,7 @@ export default function DeliveryHistoryScreen () {
           <View key={delivery.id} className={"mb-7 p-4 bg-gray-100 rounded-lg shadow"}>
             <View className={"flex-row justify-between mb-2"}>
               <Text className={"text-lg font-semibold"}>{delivery.date} - {delivery.time}</Text>
-              <Text className={`text-lg font-semibold ${delivery.status === 'Entregue' ? 'text-green-500' : 'text-red-500'}`}>{delivery.status}</Text>
+              <Text className={`text-lg font-semibold ${delivery.status === 'Entregue' ? 'text-green-500' : 'text-[#130a8f]'}`}>{delivery.status}</Text>
             </View>
             <Text className={"text-base mb-2"}>Cliente: {delivery.customerName}</Text>
             <Text className={"text-base mb-2"}>Endereço: {delivery.address}</Text>
