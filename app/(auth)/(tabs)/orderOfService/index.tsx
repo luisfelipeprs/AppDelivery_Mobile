@@ -14,7 +14,7 @@ export default function HomeScreen () {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
-      <View className="flex-1 mt-4">
+      <View className="flex-1">
         {/* Header */}
         <View className="flex-row items-center justify-between px-4 py-6 bg-gradient-to-r from-red-600 rounded-md  shadow-lg rounded-b-3xl">
           <View className="flex-1 flex-row bg-[#130a8f] m-auto px-4 rounded-md">
@@ -32,16 +32,16 @@ export default function HomeScreen () {
         </View>
 
         {/* Search Bar */}
-        {/* <View className="px-4 py-2 bg-white mx-4 mt-2 rounded-lg shadow-md border border-gray-400 relative">
+        <View className="px-4 py-2 bg-white mx-4 mt-2 rounded-lg shadow-md border border-gray-400 relative">
           <TextInput
-            placeholder="Buscar restaurantes, comidas..."
+            placeholder="Buscar parceiros..."
             className="pl-10 pr-4 py-1"
             placeholderTextColor="gray"
           />
           <View className="absolute left-4 top-1/2 transform -translate-y-1/2">
             <AntDesign name="search1" size={20} color="gray" />
           </View>
-        </View> */}
+        </View>
 
         {/* Main Content */}
         <ScrollView className="flex-1 mt-3 px-4">
@@ -79,7 +79,7 @@ export default function HomeScreen () {
           </ScrollView>
 
           {/* Categories */}
-          <Text className="text-xl font-semibold mb-4 text-gray-900">Categorias</Text>
+          <Text className="text-xl font-semibold mb-4 text-gray-900">Nossos parceiros:</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-1 gap-1">
             <TouchableOpacity className="items-center w-24" onPress={() => router.push('Categories')}>
               <View className="bg-[#f0b429] p-4 rounded-full shadow-md">

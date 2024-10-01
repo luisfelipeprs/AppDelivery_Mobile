@@ -14,7 +14,7 @@ export default function ProductsLayout () {
       <Tabs.Screen
         name="orderOfService"
         options={{
-          title: 'OrderOfService',
+          title: 'Home',
           tabBarIcon: ({ color, focused }) => (
             <FontAwesome size={28} name="home" color={focused ? '#130a8f' : '#2b22b1'} />
           ),
@@ -23,8 +23,13 @@ export default function ProductsLayout () {
               Home
             </Text>
           ),
-          // tabBarIcon: ({ color }) => <FontAwesome size={28} name="home" color={color} />,
-          headerShown: false
+          headerStyle: {
+            backgroundColor: '#130a8f', // Cor do cabeçalho
+          },
+          headerTitleStyle: {
+            color: '#fff', // Cor do texto do cabeçalho
+          },
+          headerShown: true,
         }}
       />
 
