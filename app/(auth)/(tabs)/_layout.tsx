@@ -30,6 +30,20 @@ export default function ProductsLayout () {
             color: '#fff', // Cor do texto do cabeçalho
           },
           headerShown: true,
+          headerRight: () => (
+            <TouchableOpacity
+              // onPress={() => router.push('account')}
+              onPress={() => {
+                // router.push('config/accountSettingsScreen')
+                router.push('config/cadastroScreen')
+              }}
+              // style={{ paddingRight: 15, display: 'flex', flexDirection: 'row', alignContent: 'center', gap: 10 }}
+              className='pr-5 flex flex-row gap-3'
+            >
+              <Text className='text-lg'>User</Text>
+              <FontAwesome name="user" size={24} color="white" />
+            </TouchableOpacity>
+          ),
         }}
       />
 
@@ -40,12 +54,11 @@ export default function ProductsLayout () {
           tabBarIcon: ({ color, focused }) => (
             <FontAwesome size={28} name="gear" color={focused ? '#130a8f' : '#2b22b1'} />
           ),
-          headerShown: true,
-          headerLeft: () => (
-            <TouchableOpacity onPress={() => router.push('config')} style={{ paddingLeft: 15 }}>
-              <FontAwesome name="bars" size={24} color="white" />
-            </TouchableOpacity>
-          ),
+          // headerLeft: () => (
+          //   <TouchableOpacity onPress={() => router.push('config')} style={{ paddingLeft: 15 }}>
+          //     <FontAwesome name="bars" size={24} color="white" />
+          //   </TouchableOpacity>
+          // ),
           headerStyle: {
             backgroundColor: '#130a8f', // Cor do cabeçalho
           },
@@ -84,6 +97,21 @@ export default function ProductsLayout () {
               </TouchableOpacity>
             </View>
           ),
+          headerShown: true,
+          headerRight: () => (
+            <TouchableOpacity
+              // onPress={() => router.push('account')}
+              onPress={() => {
+                // router.push('config/accountSettingsScreen')
+                router.push('config/cadastroScreen')
+              }}
+              // style={{ paddingRight: 15, display: 'flex', flexDirection: 'row', alignContent: 'center', gap: 10 }}
+              className='pr-5 flex flex-row gap-3'
+            >
+              <Text className='text-lg'>User</Text>
+              <FontAwesome name="user" size={24} color="white" />
+            </TouchableOpacity>
+          ),
         }}
       />
 
@@ -107,6 +135,20 @@ export default function ProductsLayout () {
             color: '#fff', // Cor do texto do cabeçalho
           },
           headerShown: false,
+          // headerRight: () => (
+          //   <TouchableOpacity
+          //     // onPress={() => router.push('account')}
+          //     onPress={() => {
+          //       // router.push('config/accountSettingsScreen')
+          //       router.push('config/cadastroScreen')
+          //     }}
+          //     // style={{ paddingRight: 15, display: 'flex', flexDirection: 'row', alignContent: 'center', gap: 10 }}
+          //     className='pr-5 flex flex-row gap-3'
+          //   >
+          //     <Text className='text-lg'>User</Text>
+          //     <FontAwesome name="user" size={24} color="white" />
+          //   </TouchableOpacity>
+          // ),
         }}
       />
 

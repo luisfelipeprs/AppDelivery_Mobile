@@ -9,65 +9,81 @@ export default function ConfigScreen () {
 
   const handleSignOut = () => {
     signOut();
-    router.replace('/first');  // Navega para a tela inicial após o logout
+    router.replace('/');  // Navega para a tela inicial após o logout
   };
+
+  type UserType = 'motoqueiro' | 'empresa' | 'cliente';
+
+  let accountType = 'motoqueiro' as UserType;
 
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
       <ScrollView className='my-6 mx-2'>
         {/* Section: Pedidos */}
-        <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/avaluationPage') }}>
-          <FontAwesome name="list" size={24} color="#130a8f" />
-          <Text className="ml-3 text-lg font-semibold text-gray-800">Avaliar</Text>
-        </TouchableOpacity>
+        {(accountType == 'cliente' || accountType == 'empresa') && (
+          <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/avaluationPage') }}>
+            <FontAwesome name="list" size={24} color="#130a8f" />
+            <Text className="ml-3 text-lg font-semibold text-gray-800">Avaliar - motoqueiro (cliente|empresa)</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Section: Entregas */}
-        <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/cadastroScreen') }}>
+        {/* <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/cadastroScreen') }}>
           <FontAwesome name="truck" size={24} color="#130a8f" />
           <Text className="ml-3 text-lg font-semibold text-gray-800">Cadastrar-se</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {/* Section: Configurações de Entrega */}
-        <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/orderAcceptanceScreen') }}>
-          <FontAwesome name="ticket" size={24} color="#130a8f" />
-          <Text className="ml-3 text-lg font-semibold text-gray-800">Pedido</Text>
-        </TouchableOpacity>
+        {(accountType == 'motoqueiro') && (
+          <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/orderAcceptanceScreen') }}>
+            <FontAwesome name="ticket" size={24} color="#130a8f" />
+            <Text className="ml-3 text-lg font-semibold text-gray-800">Pedidos disponíveis (motoqueiro)</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Section: Configurações de Entrega */}
-        <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/deliveryHistory') }}>
-          <FontAwesome name="list-ol" size={24} color="#130a8f" />
-          <Text className="ml-3 text-lg font-semibold text-gray-800">Histórico de pedidos</Text>
-        </TouchableOpacity>
+        {(accountType == 'cliente' || accountType == 'empresa') && (
+          <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/deliveryHistory') }}>
+            <FontAwesome name="list-ol" size={24} color="#130a8f" />
+            <Text className="ml-3 text-lg font-semibold text-gray-800">Histórico de pedidos (cliente|empresa)</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Section: Configurações de Entrega */}
-        <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/supportScreen') }}>
-          <FontAwesome name="warning" size={24} color="#130a8f" />
-          <Text className="ml-3 text-lg font-semibold text-gray-800">Denuncia</Text>
-        </TouchableOpacity>
+        {(accountType == 'motoqueiro' || accountType == 'empresa') && (
+          <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/supportScreen') }}>
+            <FontAwesome name="warning" size={24} color="#130a8f" />
+            <Text className="ml-3 text-lg font-semibold text-gray-800">Denuncia (empresa|motorista)</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Section: Configurações de Entrega */}
-        <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/languageSelectionScreen') }}>
-          <FontAwesome name="language" size={24} color="#130a8f" />
-          <Text className="ml-3 text-lg font-semibold text-gray-800">Idiomas</Text>
-        </TouchableOpacity>
+        {(accountType) && (
+          <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/languageSelectionScreen') }}>
+            <FontAwesome name="language" size={24} color="#130a8f" />
+            <Text className="ml-3 text-lg font-semibold text-gray-800">Idiomas</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Section: Configurações de Entrega */}
-        <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/accountSettingsScreen') }}>
+        {/* <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/accountSettingsScreen') }}>
           <FontAwesome name="user" size={24} color="#130a8f" />
           <Text className="ml-3 text-lg font-semibold text-gray-800">Dados da conta</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {/* Section: Configurações de Entrega */}
-        <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/driverSchedule') }}>
-          <FontAwesome name="cogs" size={24} color="#130a8f" />
-          <Text className="ml-3 text-lg font-semibold text-gray-800">Turnos de trabalho</Text>
-        </TouchableOpacity>
+        {(accountType == 'empresa') && (
+          <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/driverSchedule') }}>
+            <FontAwesome name="cogs" size={24} color="#130a8f" />
+            <Text className="ml-3 text-lg font-semibold text-gray-800">Turnos de trabalho (empresa)</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Section: Configurações de Entrega */}
-        <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/mapsLocation') }}>
+        {/* <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/mapsLocation') }}>
           <FontAwesome name="map-signs" size={24} color="#130a8f" />
           <Text className="ml-3 text-lg font-semibold text-gray-800">maps</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {/* Section: Sair */}
         <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={handleSignOut}>

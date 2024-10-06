@@ -8,7 +8,15 @@ export default function Login () {
 
   const handleLogin = () => {
     // Adicione sua lógica de login aqui
-    signIn();
+    const userData = {
+      id: "12345",
+      typeAccount: "admin",
+      email: "user@example.com",
+      nome: "John Doe",
+      // Outros dados se necessário
+    };
+
+    signIn(userData);
     // Antes de navegar, tenha certeza de que o usuário está autenticado
     router.replace('/');
   };

@@ -1,4 +1,7 @@
-import { Redirect, Stack } from 'expo-router';
+import { FontAwesome } from '@expo/vector-icons';
+import { Redirect, router, Stack } from 'expo-router';
+import { TouchableOpacity } from 'react-native';
+import { Text } from '@/components/Themed';
 
 
 export default function ProductsLayout () {
@@ -14,6 +17,21 @@ export default function ProductsLayout () {
           color: '#fff', // Cor do texto do cabeçalho
         },
         headerShown: true,
+        headerTintColor: '#fff', // Cor do botão de voltar
+        headerRight: () => (
+          <TouchableOpacity
+            // onPress={() => router.push('account')}
+            onPress={() => {
+              // router.push('config/accountSettingsScreen')
+              router.push('config/cadastroScreen')
+            }}
+            // style={{ paddingRight: 15, display: 'flex', flexDirection: 'row', alignContent: 'center', gap: 10 }}
+            className='pr-5 flex flex-row gap-3'
+          >
+            <Text className='text-lg'>User</Text>
+            <FontAwesome name="user" size={24} color="white" />
+          </TouchableOpacity>
+        ),
       }} />
 
       <Stack.Screen name="avaluationPage" options={{
@@ -25,6 +43,7 @@ export default function ProductsLayout () {
           color: '#fff', // Cor do texto do cabeçalho
         },
         headerShown: true,
+        headerTintColor: '#fff', // Cor do botão de voltar
       }} />
 
       <Stack.Screen name="cadastroScreen" options={{
@@ -36,6 +55,7 @@ export default function ProductsLayout () {
           color: '#fff', // Cor do texto do cabeçalho
         },
         headerShown: true,
+        headerTintColor: '#fff', // Cor do botão de voltar
       }} />
 
       <Stack.Screen name="orderAcceptanceScreen" options={{
@@ -47,6 +67,7 @@ export default function ProductsLayout () {
           color: '#fff', // Cor do texto do cabeçalho
         },
         headerShown: true,
+        headerTintColor: '#fff', // Cor do botão de voltar
       }} />
 
       <Stack.Screen name="deliveryHistory" options={{
@@ -58,6 +79,7 @@ export default function ProductsLayout () {
           color: '#fff', // Cor do texto do cabeçalho
         },
         headerShown: true,
+        headerTintColor: '#fff', // Cor do botão de voltar
       }} />
 
       <Stack.Screen name="supportScreen" options={{
@@ -69,6 +91,7 @@ export default function ProductsLayout () {
           color: '#fff', // Cor do texto do cabeçalho
         },
         headerShown: true,
+        headerTintColor: '#fff', // Cor do botão de voltar
       }} />
 
       <Stack.Screen name="userEvaluationReporting" options={{
@@ -80,6 +103,7 @@ export default function ProductsLayout () {
           color: '#fff', // Cor do texto do cabeçalho
         },
         headerShown: true,
+        headerTintColor: '#fff', // Cor do botão de voltar
       }} />
 
       <Stack.Screen name="languageSelectionScreen" options={{
@@ -91,6 +115,7 @@ export default function ProductsLayout () {
           color: '#fff', // Cor do texto do cabeçalho
         },
         headerShown: true,
+        headerTintColor: '#fff', // Cor do botão de voltar
       }} />
 
       <Stack.Screen name="accountSettingsScreen" options={{
@@ -102,6 +127,7 @@ export default function ProductsLayout () {
           color: '#fff', // Cor do texto do cabeçalho
         },
         headerShown: true,
+        headerTintColor: '#fff', // Cor do botão de voltar
       }} />
 
       <Stack.Screen name="driverSchedule" options={{
@@ -113,6 +139,7 @@ export default function ProductsLayout () {
           color: '#fff', // Cor do texto do cabeçalho
         },
         headerShown: true,
+        headerTintColor: '#fff', // Cor do botão de voltar
       }} />
 
       <Stack.Screen name="mapsLocation" options={{
@@ -124,6 +151,7 @@ export default function ProductsLayout () {
           color: '#fff', // Cor do texto do cabeçalho
         },
         headerShown: true,
+        headerTintColor: '#fff', // Cor do botão de voltar
       }} />
 
     </Stack>

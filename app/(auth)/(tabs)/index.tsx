@@ -221,10 +221,10 @@ const DeliveryRouteScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View className='flex-1'>
       <MapView
+        className='flex-1'
         provider={PROVIDER_GOOGLE}
-        style={styles.map}
         ref={mapRef}
         initialRegion={{
           latitude: origin?.latitude || 37.78825,
@@ -259,7 +259,7 @@ const DeliveryRouteScreen: React.FC = () => {
         )}
       </MapView>
 
-      <View style={styles.menuContainer}>
+      <View className='absolute top-5 left-2 right-2 bg-white p-2 rounded-lg shadow-lg'>
         <GooglePlacesAutocomplete
           placeholder="Endereço inicial"
           fetchDetails={true}
@@ -272,7 +272,7 @@ const DeliveryRouteScreen: React.FC = () => {
         />
 
         {stops.map((stop, index) => (
-          <View key={index} style={styles.stopContainer}>
+          <View key={index} className='flex flex-row items-center'>
             <GooglePlacesAutocomplete
               placeholder={`Parada ${index + 1}`}
               fetchDetails={true}
@@ -283,14 +283,18 @@ const DeliveryRouteScreen: React.FC = () => {
               }}
               styles={autocompleteStyles}
             />
-            <TouchableOpacity style={styles.removeButton} onPress={() => removeStop(index)}>
-              <Text style={styles.removeButtonText}>×</Text>
+            <TouchableOpacity className='bg-red-500 rounded-full w-7 h-7 flex justify-center items-center ml-2' onPress={() => removeStop(index)}>
+              <Text className='text-white text-lg leading-none'>×</Text>
             </TouchableOpacity>
           </View>
         ))}
 
-        <TouchableOpacity style={[styles.addButton, stops.length >= 3 && styles.addButtonDisabled]} onPress={addStop} disabled={stops.length >= 3}>
-          <Text style={styles.addButtonText}>+ Adicionar Parada</Text>
+        <TouchableOpacity
+          className={`${stops.length >= 1 ? 'bg-gray-300' : 'bg-blue-500'} mt-2 py-2 rounded-md flex justify-center items-center`}
+          onPress={addStop}
+          disabled={stops.length >= 1}
+        >
+          <Text className='text-white text-base'>+ Adicionar Parada</Text>
         </TouchableOpacity>
 
         <GooglePlacesAutocomplete
@@ -304,135 +308,31 @@ const DeliveryRouteScreen: React.FC = () => {
           styles={autocompleteStyles}
         />
 
-        <TouchableOpacity style={styles.generateButton} onPress={handleGenerateRoute}>
-          <Text style={styles.generateButtonText}>Gerar Rota</Text>
+        <TouchableOpacity className='mt-2 py-2 bg-green-500 rounded-md flex justify-center items-center' onPress={handleGenerateRoute}>
+          <Text className='text-white text-base'>Gerar Rota</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.startButton} onPress={handleStartDelivery}>
-          <Text style={styles.startButtonText}>Iniciar Entrega</Text>
+        <TouchableOpacity className='mt-2 py-2 bg-orange-500 rounded-md flex justify-center items-center' onPress={handleStartDelivery}>
+          <Text className='text-white text-base'>Iniciar Entrega</Text>
         </TouchableOpacity>
       </View>
 
       {routeVisible && (
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoText}>Distância Total: {distance ? `${distance.toFixed(2)} km` : 'N/A'}</Text>
-          <Text style={styles.infoText}>Duração Estimada: {duration ? `${duration.toFixed(2)} min` : 'N/A'}</Text>
+        <View className='mt-2 py-2 bg-orange-500 rounded-md flex justify-center items-center'>
+          <Text className='text-base'>Distância Total: {distance ? `${distance.toFixed(2)} km` : 'N/A'}</Text>
+          <Text className='text-base'>Duração Estimada: {duration ? `${duration.toFixed(2)} min` : 'N/A'}</Text>
           {stops.map((_, index) => (
-            <Text key={index} style={styles.infoText}>
+            <Text key={index} className='text-base'>
               Tempo Estimado para Parada {index + 1}: {estimatedArrivalTimes[index] || 'N/A'}
             </Text>
           ))}
         </View>
       )}
 
-      {error && <Text style={styles.error}>{error}</Text>}
+      {error && <Text className='absolute bottom-5 left-2 right-2 text-red-500 text-sm text-center'>{error}</Text>}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  map: {
-    flex: 1,
-  },
-  menuContainer: {
-    position: 'absolute',
-    top: 20,
-    left: 10,
-    right: 10,
-    backgroundColor: 'white',
-    padding: 10,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  stopContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  removeButton: {
-    backgroundColor: '#FF3B30',
-    borderRadius: 15,
-    width: 30,
-    height: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 10,
-  },
-  removeButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    lineHeight: 18,
-  },
-  addButton: {
-    marginTop: 10,
-    paddingVertical: 8,
-    backgroundColor: '#007AFF',
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-  addButtonDisabled: {
-    backgroundColor: '#d3d3d3',
-  },
-  addButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  generateButton: {
-    marginTop: 10,
-    paddingVertical: 8,
-    backgroundColor: '#34C759',
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-  generateButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  startButton: {
-    marginTop: 10,
-    paddingVertical: 8,
-    backgroundColor: '#FF9500',
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-  startButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  infoContainer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 10,
-    right: 10,
-    backgroundColor: 'white',
-    padding: 10,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-    alignItems: 'center',
-  },
-  infoText: {
-    fontSize: 16,
-  },
-  error: {
-    position: 'absolute',
-    bottom: 20,
-    left: 10,
-    right: 10,
-    color: '#FF3B30',
-    fontSize: 14,
-    textAlign: 'center',
-  },
-});
 
 const autocompleteStyles = {
   textInputContainer: {
