@@ -4,6 +4,7 @@ import { useSession } from './ctx';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import loginCompany from '../services/LoginCompany'; // Importando a função de login
+import loginConsumer from '@/services/LoginConsumer';
 
 export default function Login() {
   const { signIn } = useSession();
@@ -11,7 +12,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
 
   useEffect(() => {
-    // Quando o componente é montado, verifica se há credenciais salvas
+    AsyncStorage.setItem('domain',"https://948b-187-108-255-14.ngrok-free.app") // domínio do backend
     checkLogin();
   }, []);
   
@@ -21,7 +22,6 @@ export default function Login() {
       const storedPassword = await AsyncStorage.getItem('password');
   
       if (storedEmail && storedPassword) {
-        // Tenta realizar o login com as credenciais salvas
         handleLogin(storedEmail, storedPassword);
       }
     } catch (e) {
@@ -37,7 +37,7 @@ export default function Login() {
 
     try {
       // Chama a função de login e obtém os dados do usuário
-      const response = await loginCompany(emailToUse, passwordToUse);
+      const response = await loginConsumer(emailToUse, passwordToUse);
       const userData = {
         id: response.id,
         typeAccount: response.role,
@@ -45,7 +45,6 @@ export default function Login() {
         nome: response.name,
       };
 
-      // Salva os dados do usuário e faz login
       signIn(userData);
 
       // Salva as credenciais no AsyncStorage

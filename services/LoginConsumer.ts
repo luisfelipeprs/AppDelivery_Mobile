@@ -1,16 +1,18 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-export default async function LoginCompany(email: string, password: string) {
+export default async function loginConsumer(email: string, password: string) {
   try {
-    const dominio = await AsyncStorage.getItem("domain")
+     const dominio = await AsyncStorage.getItem("domain")
+    // const porta = "5027"
     
-    if (!dominio) {
-      throw new Error('Domínio ou porta não encontrados no AsyncStorage');
-    }
+     if (!dominio) {
+       throw new Error('Domínio não encontrado no AsyncStorage');
+     }
 
-    const url = `${dominio}/company/login`;
-
+    const url = `${dominio}/consumer/login`;
+     console.log("url > ", url);
+     
     const data = {
       email,
       password,
@@ -25,7 +27,7 @@ export default async function LoginCompany(email: string, password: string) {
     return response.data;
   } catch (error) {
     // Trata erros da requisição
-    console.error('Erro no login:', error);
+    console.error('Erro no login de consumer:', error);
     throw error;
   }
 }
