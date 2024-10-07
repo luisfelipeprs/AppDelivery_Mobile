@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-export default async function LoginCompany(email: string, password: string) {
+export default async function loginDriver(email: string, password: string) {
   try {
     const dominio = await AsyncStorage.getItem("domain")
     
@@ -24,7 +24,6 @@ export default async function LoginCompany(email: string, password: string) {
   
     return response.data;
   } catch (error) {
-    // Trata erros da requisição
     console.error('Erro no login do motorista:', error);
     throw error;
   }
