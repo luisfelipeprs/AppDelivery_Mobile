@@ -4,6 +4,7 @@ import { useSession } from './ctx';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import loginDriver from '@/services/LoginDriver';
+import LoginCompany from '@/services/LoginCompany';
 
 export default function Login() {
   const { signIn } = useSession();
@@ -11,7 +12,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
 
   useEffect(() => {
-    AsyncStorage.setItem('domain',"https://948b-187-108-255-14.ngrok-free.app") // domínio do backend
+    AsyncStorage.setItem('domain',"https://5385-187-108-255-14.ngrok-free.app") // domínio do backend
     checkLogin();
   }, []);
   
@@ -32,7 +33,7 @@ export default function Login() {
     const passwordToUse = inputPassword || password;
 
     try {
-      const response = await loginDriver(emailToUse, passwordToUse);
+      const response = await LoginCompany(emailToUse, passwordToUse);
       const userData = {
         id: response.id,
         typeAccount: response.role,
@@ -51,7 +52,7 @@ export default function Login() {
   };
 
   const handleRegister = () => {
-    router.push('/registro');
+    router.push('/register-company');
   };
 
   return (
