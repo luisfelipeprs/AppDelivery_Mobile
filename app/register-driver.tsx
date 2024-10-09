@@ -37,9 +37,9 @@ export default function RegisterDriverForm() {
 
     try {
       console.log("data > ", dataToSend);
-      
+
       const response = await RegisterDriver(dataToSend);
-      
+
       console.log('Motorista registrado com sucesso:', response);
       signIn(response);
       router.replace("/");
@@ -74,6 +74,14 @@ export default function RegisterDriverForm() {
           placeholder="E-mail"
           value={driverData.email}
           onChangeText={(text) => handleInputChange('email', text)}
+          className="p-4 mb-4 border border-gray-300 rounded bg-white/90 shadow-md"
+          placeholderTextColor="#888"
+        />
+
+        <TextInput
+          placeholder="Senha"
+          value={driverData.password}
+          onChangeText={(text) => handleInputChange('password', text)}
           className="p-4 mb-4 border border-gray-300 rounded bg-white/90 shadow-md"
           placeholderTextColor="#888"
         />
