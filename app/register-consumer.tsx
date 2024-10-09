@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, Image } from 'react-native';
 import { router } from 'expo-router';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import RegisterCompany from '@/services/RegisterCompany';
+import RegisterConsumer from '@/services/RegisterConsumer';
 import { useSession } from './ctx';
 
 interface AddressComponent {
@@ -20,27 +20,19 @@ interface PlaceDetails {
   };
 }
 
-export default function BasicInfoForm() {
-  const [companyData, setCompanyData] = useState({
+export default function ConsumerForm() {
+  const [consumerData, setConsumerData] = useState({
     name: '',
-    cnpj: '',
     email: '',
-    phone: '',
     password: '',
-    confirmPassword: '',
-    typeCompany: '',
-    cep: '',
-    street: '',
-    numberLocation: '',
-    neighborhood: '',
-    city: '',
-    state: '',
-    latitude: '',
-    longitude: '',
+    phone: '',
+    address: '',
+    dateOfBirth: '',
   });
   const { signIn } = useSession();
+
   const handleInputChange = (field: string, value: string) => {
-    setCompanyData({ ...companyData, [field]: value });
+    setConsumerData({ ...consumerData, [field]: value });
   };
 
   const handleLogin = () => {
@@ -53,58 +45,31 @@ export default function BasicInfoForm() {
     if (details) {
       const { lat, lng } = details.geometry.location;
 
-      const street = details.address_components.find(component =>
+      const address = details.address_components.find(component =>
         component.types.includes('route')
       )?.long_name || '';
-
-      const city = details.address_components.find(component =>
-        component.types.includes('locality')
-      )?.long_name || '';
-
-      const state = details.address_components.find(component =>
-        component.types.includes('administrative_area_level_1')
-      )?.long_name || '';
-
-      const neighborhood = details.address_components.find(component =>
-        component.types.includes('sublocality')
-      )?.long_name || '';
-
-  
-      setCompanyData({
-        ...companyData,
-        street,
-        city,
-        state,
-        neighborhood,
-        latitude: lat.toString(),
-        longitude: lng.toString(),
+      
+      setConsumerData({
+        ...consumerData,
+        address,
       });
     }
   };
 
   const handleSubmit = async () => {
     const dataToSend = {
-      name: companyData.name,
-      cnpj: companyData.cnpj,
-      email: companyData.email,
-      phone: companyData.phone,
-      password: companyData.password,
-      typeCompany: companyData.typeCompany,
-      cep: companyData.cep,
-      street: companyData.street,
-      numberLocation: companyData.numberLocation,
-      neighborhood: companyData.neighborhood,
-      city: companyData.city,
-      state: companyData.state,
-      latitude: parseFloat(companyData.latitude),
-      longitude: parseFloat(companyData.longitude),
-      active: true,
+      name: consumerData.name,
+      email: consumerData.email,
+      password: consumerData.password,
+      phone: consumerData.phone,
+      address: consumerData.address,
+      dateOfBirth: consumerData.dateOfBirth,
     };
-  
+
     try {
-      console.log(dataToSend);
+      console.log("data > ",dataToSend);
       
-      const response = await RegisterCompany(dataToSend);
+      const response = await RegisterConsumer(dataToSend);
       const userData = {
         id: response.id,
         typeAccount: response.role,
@@ -113,14 +78,12 @@ export default function BasicInfoForm() {
       };
 
       signIn(userData);
-      router.replace("/")
-      console.log('Empresa registrada com sucesso:', response);
-
+      router.replace("/");
+      console.log('Consumidor registrado com sucesso:', response);
     } catch (error) {
-      console.error('Erro ao registrar empresa:', error);
+      console.error('Erro ao registrar consumidor:', error);
     }
   };
-  
 
   return (
     <View className="flex-1 relative">
@@ -130,30 +93,22 @@ export default function BasicInfoForm() {
       />
       <View className="flex-1 justify-center p-6 bg-black/50 backdrop-blur-md">
         <View className="mb-8 items-center">
-          <Text className="text-6xl font-extrabold text-white mt-4 tracking-wide">
+          <Text className="text-6xl font-extrabold text-white mt-32 tracking-wide">
             Delivery<Text className="text-[#130a8f]">Já</Text>
           </Text>
         </View>
 
         <TextInput
           placeholder="Nome Completo"
-          value={companyData.name}
+          value={consumerData.name}
           onChangeText={(text) => handleInputChange('name', text)}
           className="p-4 mb-4 border border-gray-300 rounded bg-white/90 shadow-md"
           placeholderTextColor="#888"
         />
 
         <TextInput
-          placeholder="CNPJ"
-          value={companyData.cnpj}
-          onChangeText={(text) => handleInputChange('cnpj', text)}
-          className="p-4 mb-4 border border-gray-300 rounded bg-white/90 shadow-md"
-          placeholderTextColor="#888"
-        />
-
-        <TextInput
           placeholder="E-mail"
-          value={companyData.email}
+          value={consumerData.email}
           onChangeText={(text) => handleInputChange('email', text)}
           className="p-4 mb-4 border border-gray-300 rounded bg-white/90 shadow-md"
           placeholderTextColor="#888"
@@ -161,7 +116,7 @@ export default function BasicInfoForm() {
 
         <TextInput
           placeholder="Telefone"
-          value={companyData.phone}
+          value={consumerData.phone}
           onChangeText={(text) => handleInputChange('phone', text)}
           className="p-4 mb-4 border border-gray-300 rounded bg-white/90 shadow-md"
           placeholderTextColor="#888"
@@ -170,31 +125,22 @@ export default function BasicInfoForm() {
         <TextInput
           placeholder="Senha"
           secureTextEntry
-          value={companyData.password}
+          value={consumerData.password}
           onChangeText={(text) => handleInputChange('password', text)}
           className="p-4 mb-4 border border-gray-300 rounded bg-white/90 shadow-md"
           placeholderTextColor="#888"
         />
 
         <TextInput
-          placeholder="Confirmar Senha"
-          secureTextEntry
-          value={companyData.confirmPassword}
-          onChangeText={(text) => handleInputChange('confirmPassword', text)}
-          className="p-4 mb-6 border border-gray-300 rounded bg-white/90 shadow-md"
-          placeholderTextColor="#888"
-        />
-
-        <TextInput
-          placeholder="Tipo de Empresa"
-          value={companyData.typeCompany}
-          onChangeText={(text) => handleInputChange('typeCompany', text)}
-          className="p-4 mb-6 border border-gray-300 rounded bg-white/90 shadow-md"
+          placeholder="Data de Nascimento (AAAA-MM-DD)"
+          value={consumerData.dateOfBirth}
+          onChangeText={(text) => handleInputChange('dateOfBirth', text)}
+          className="p-4 mb-4 border border-gray-300 rounded bg-white/90 shadow-md"
           placeholderTextColor="#888"
         />
 
         <GooglePlacesAutocomplete
-          placeholder="Endereço de entrega"
+          placeholder="Endereço"
           fetchDetails={true}
           onPress={handlePlaceSelect}
           query={{
@@ -206,13 +152,13 @@ export default function BasicInfoForm() {
 
         <TouchableOpacity
           onPress={handleSubmit}
-          className="bg-blue-500 p-4 rounded mb-4 shadow-lg"
+          className="bg-blue-500 p-4 rounded mb-16 shadow-lg"
         >
-          <Text className="text-white text-center text-lg">Registrar Empresa</Text>
+          <Text className="text-white text-center text-lg">Registrar Consumidor</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={handleLogin}>
-          <Text className="text-center text-white">
+          <Text className="text-center text-white mb-14">
             Já tem uma conta? <Text className="text-blue-300">Login</Text>
           </Text>
         </TouchableOpacity>
