@@ -3,8 +3,8 @@ import { View, TextInput, TouchableOpacity, Text, Image, Alert } from 'react-nat
 import { useSession } from './ctx';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import loginCompany from '../services/LoginCompany'; // Importando a função de login
-import loginConsumer from '@/services/LoginConsumer';
+import loginDriver from '@/services/LoginDriver';
+import LoginCompany from '@/services/LoginCompany';
 
 export default function Login() {
   const { signIn } = useSession();
@@ -12,7 +12,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
 
   useEffect(() => {
-    AsyncStorage.setItem('domain',"https://948b-187-108-255-14.ngrok-free.app") // domínio do backend
+    AsyncStorage.setItem('domain',"https://5385-187-108-255-14.ngrok-free.app") // domínio do backend
     checkLogin();
   }, []);
   
@@ -28,16 +28,12 @@ export default function Login() {
       console.error('Erro ao carregar dados do AsyncStorage:', e);
     }
   };
-  
-
-  // Função de login
   const handleLogin = async (inputEmail: string, inputPassword: string) => {
     const emailToUse = inputEmail || email;
     const passwordToUse = inputPassword || password;
 
     try {
-      // Chama a função de login e obtém os dados do usuário
-      const response = await loginConsumer(emailToUse, passwordToUse);
+      const response = await LoginCompany(emailToUse, passwordToUse);
       const userData = {
         id: response.id,
         typeAccount: response.role,
@@ -46,12 +42,8 @@ export default function Login() {
       };
 
       signIn(userData);
-
-      // Salva as credenciais no AsyncStorage
       await AsyncStorage.setItem('email', emailToUse);
       await AsyncStorage.setItem('password', passwordToUse);
-
-      // Navega para a página inicial
       router.replace('/');
     } catch (error) {
       console.error('Erro no login:', error);
@@ -59,9 +51,8 @@ export default function Login() {
     }
   };
 
-  // Função de registrar (apenas para navegação)
   const handleRegister = () => {
-    router.push('/registro');
+    router.push('/register-consumer');
   };
 
   return (
@@ -94,7 +85,7 @@ export default function Login() {
           placeholderTextColor="#888"
         />
         <TouchableOpacity
-          onPress={() => handleLogin(email, password)} // Passando os valores de email e senha
+          onPress={() => handleLogin(email, password)}
           className="bg-[#130a8f] p-4 rounded mb-4 shadow-lg"
         >
           <Text className="text-white text-center text-lg">Login</Text>
