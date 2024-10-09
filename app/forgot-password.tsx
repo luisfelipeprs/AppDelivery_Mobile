@@ -21,7 +21,10 @@ export default function ForgotPassword() {
 
     await ResetPassword(dataResetPassword);
     console.log("Email de redefinição enviado.");
-    router.push('/confirm-reset-password');
+    router.push({
+      pathname: '/confirm-reset-password',
+      params: { email: resetPasswordData.email },
+    });
   };
 
   const handleLogin = () => {
