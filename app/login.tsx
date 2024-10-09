@@ -5,22 +5,24 @@ import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import loginDriver from '@/services/LoginDriver';
 import LoginCompany from '@/services/LoginCompany';
+import loginConsumer from '@/services/LoginConsumer';
 
 export default function Login() {
   const { signIn } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [userType, setUserType] = useState<'Company' | 'Consumer' | 'Driver'>('Consumer');
 
   useEffect(() => {
-    AsyncStorage.setItem('domain',"https://5385-187-108-255-14.ngrok-free.app") // domínio do backend
+    AsyncStorage.setItem('domain', "https://c62d-187-108-255-14.ngrok-free.app"); // domínio do backend
     checkLogin();
   }, []);
-  
+
   const checkLogin = async () => {
     try {
       const storedEmail = await AsyncStorage.getItem('email');
       const storedPassword = await AsyncStorage.getItem('password');
-  
+
       if (storedEmail && storedPassword) {
         handleLogin(storedEmail, storedPassword);
       }
@@ -28,12 +30,22 @@ export default function Login() {
       console.error('Erro ao carregar dados do AsyncStorage:', e);
     }
   };
+
   const handleLogin = async (inputEmail: string, inputPassword: string) => {
     const emailToUse = inputEmail || email;
     const passwordToUse = inputPassword || password;
 
     try {
-      const response = await LoginCompany(emailToUse, passwordToUse);
+      let response;
+
+      if (userType === 'Company') {
+        response = await LoginCompany(emailToUse, passwordToUse);
+      } else if (userType === 'Driver') {
+        response = await loginDriver(emailToUse, passwordToUse);
+      } else {
+        response = await loginConsumer(emailToUse, passwordToUse);
+      }
+
       const userData = {
         id: response.id,
         typeAccount: response.role,
@@ -52,7 +64,11 @@ export default function Login() {
   };
 
   const handleRegister = () => {
-    router.push('/register-driver');
+    router.push('/register-consumer');
+  };
+
+  const handleUserTypeChange = (type: 'Company' | 'Consumer' | 'Driver') => {
+    setUserType(type);
   };
 
   return (
@@ -67,6 +83,31 @@ export default function Login() {
             Delivery<Text className="text-[#130a8f]">Já</Text>
           </Text>
         </View>
+        
+        <View className="mb-4">
+          <Text className="text-white mb-2 font-bold">Tipo de Usuário:</Text>
+          <View className="flex-row justify-between">
+            <TouchableOpacity
+              onPress={() => handleUserTypeChange('Company')}
+              className={`p-4 mb-2 border border-gray-300 rounded-full flex-1 mx-1 ${userType === 'Company' ? 'bg-blue-500' : 'bg-white/90'}`}
+            >
+              <Text className={`text-center ${userType === 'Company' ? 'text-white' : 'text-black'}`}>Empresa</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleUserTypeChange('Consumer')}
+              className={`p-4 mb-2 border border-gray-300 rounded-full flex-1 mx-1 ${userType === 'Consumer' ? 'bg-blue-500' : 'bg-white/90'}`}
+            >
+              <Text className={`text-center ${userType === 'Consumer' ? 'text-white' : 'text-black'}`}>Consumidor</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleUserTypeChange('Driver')}
+              className={`p-4 mb-2 border border-gray-300 rounded-full flex-1 mx-1 ${userType === 'Driver' ? 'bg-blue-500' : 'bg-white/90'}`}
+            >
+              <Text className={`text-center ${userType === 'Driver' ? 'text-white' : 'text-black'}`}>Entregador</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         <TextInput
           placeholder="E-mail"
           value={email}
@@ -84,6 +125,7 @@ export default function Login() {
           className="p-4 mb-6 border border-gray-300 rounded bg-white/90 shadow-md"
           placeholderTextColor="#888"
         />
+        
         <TouchableOpacity
           onPress={() => handleLogin(email, password)}
           className="bg-[#130a8f] p-4 rounded mb-4 shadow-lg"
