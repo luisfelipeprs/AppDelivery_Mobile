@@ -52,7 +52,7 @@ export default function Login() {
   };
 
   const handleRegister = () => {
-    router.push('/register-consumer');
+    router.push('/register-driver');
   };
 
   return (
