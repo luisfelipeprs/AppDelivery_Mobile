@@ -128,7 +128,7 @@ export default function BasicInfoForm() {
         source={{ uri: 'https://img.freepik.com/fotos-gratis/delicioso-hamburguer-com-ingredientes-frescos_23-2150857908.jpg' }}
         className="absolute inset-0 w-full h-full object-cover"
       />
-      <View className="flex-1 justify-center p-6 bg-black/50 backdrop-blur-md">
+      <View className="flex-1 justify-center p-6 mt-12 bg-black/50 backdrop-blur-md">
         <View className="mb-8 items-center">
           <Text className="text-6xl font-extrabold text-white mt-4 tracking-wide">
             Delivery<Text className="text-[#130a8f]">Já</Text>
@@ -206,13 +206,13 @@ export default function BasicInfoForm() {
 
         <TouchableOpacity
           onPress={handleSubmit}
-          className="bg-blue-500 p-4 rounded mb-4 shadow-lg"
+          className="bg-blue-500 p-4 rounded mb-7 shadow-lg"
         >
           <Text className="text-white text-center text-lg">Registrar Empresa</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={handleLogin}>
-          <Text className="text-center text-white">
+          <Text className="text-center text-white mb-12">
             Já tem uma conta? <Text className="text-blue-300">Login</Text>
           </Text>
         </TouchableOpacity>
