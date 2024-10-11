@@ -20,7 +20,7 @@ export default function ProductsLayout () {
   return (
     <Stack>
       <Stack.Screen name="index" options={{
-        title: 'Config',
+        title: 'Configurações',
         headerStyle: {
           backgroundColor: '#130a8f', // Cor do cabeçalho
         },
@@ -29,6 +29,7 @@ export default function ProductsLayout () {
         },
         headerShown: true,
         headerTintColor: '#fff', // Cor do botão de voltar
+        headerLeft: () => null,
         headerRight: () => (
           <TouchableOpacity
             onPress={handlePress}
@@ -45,7 +46,7 @@ export default function ProductsLayout () {
       />
 
       <Stack.Screen name="avaluationPage" options={{
-        title: 'avaluationPage',
+        title: 'Avaliar Entregador',
         headerStyle: {
           backgroundColor: '#130a8f', // Cor do cabeçalho
         },
@@ -81,7 +82,7 @@ export default function ProductsLayout () {
       }} />
 
       <Stack.Screen name="deliveryHistory" options={{
-        title: 'deliveryHistory',
+        title: 'Histórico de Pedidos',
         headerStyle: {
           backgroundColor: '#130a8f', // Cor do cabeçalho
         },
@@ -117,7 +118,7 @@ export default function ProductsLayout () {
       }} />
 
       <Stack.Screen name="languageSelectionScreen" options={{
-        title: 'languageSelectionScreen',
+        title: 'Idioma',
         headerStyle: {
           backgroundColor: '#130a8f', // Cor do cabeçalho
         },
@@ -129,7 +130,7 @@ export default function ProductsLayout () {
       }} />
 
       <Stack.Screen name="accountSettingsScreen" options={{
-        title: 'accountSettingsScreen',
+        title: 'Configuração da Conta',
         headerStyle: {
           backgroundColor: '#130a8f', // Cor do cabeçalho
         },
