@@ -338,9 +338,9 @@ const DeliveryRouteScreen: React.FC = () => {
       </View>
 
       {routeVisible && (
-        <View className='mt-2 py-2 bg-orange-500 rounded-md flex justify-center items-center'>
-          <Text className='text-base'>Distância Total: {distance ? `${distance.toFixed(2)} km` : 'N/A'}</Text>
-          <Text className='text-base'>Duração Estimada: {duration ? `${duration.toFixed(2)} min` : 'N/A'}</Text>
+        <View className='mt-2 py-2 bg-orange-500 rounded-md flex justify-center items-center pb-8'>
+          <Text className='text-base text-bold text-white'>Distância Total: {distance ? `${distance.toFixed(2)} km` : 'N/A'}</Text>
+          <Text className='text-base text-bold text-white'>Duração Estimada: {duration ? `${duration.toFixed(2)} min` : 'N/A'}</Text>
           {stops.map((_, index) => (
             <Text key={index} className='text-base'>
               Tempo Estimado para Parada {index + 1}: {estimatedArrivalTimes[index] || 'N/A'}
