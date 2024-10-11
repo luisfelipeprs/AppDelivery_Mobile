@@ -1,8 +1,9 @@
 import { FontAwesome } from '@expo/vector-icons';
-import { Redirect, router, Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { TouchableOpacity } from 'react-native';
 import { Text } from '@/components/Themed';
 import { useSession } from '@/app/ctx';
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 
 export default function ProductsLayout () {
@@ -19,28 +20,28 @@ export default function ProductsLayout () {
   return (
     <Stack>
       <Stack.Screen name="index" options={{
-          title: 'Config',
-          headerStyle: {
-            backgroundColor: '#130a8f', // Cor do cabeçalho
-          },
-          headerTitleStyle: {
-            color: '#fff', // Cor do texto do cabeçalho
-          },
-          headerShown: true,
-          headerTintColor: '#fff', // Cor do botão de voltar
-          headerRight: () => (
-            <TouchableOpacity
-              onPress={handlePress}
-              className="pr-5 flex flex-row gap-3">
-              {accountType !== 'Guest' ? (
-                <Text className="text-lg font-bold text-white">Perfil</Text>
-              ) : (
-                <Text className="text-lg font-bold text-white">Entrar</Text>
-              )}
-              <FontAwesome name="user" size={24} color="white" />
-            </TouchableOpacity>
-          ),
-        }}
+        title: 'Config',
+        headerStyle: {
+          backgroundColor: '#130a8f', // Cor do cabeçalho
+        },
+        headerTitleStyle: {
+          color: '#fff', // Cor do texto do cabeçalho
+        },
+        headerShown: true,
+        headerTintColor: '#fff', // Cor do botão de voltar
+        headerRight: () => (
+          <TouchableOpacity
+            onPress={handlePress}
+            className="pr-5 flex flex-row gap-3">
+            {accountType !== 'Guest' ? (
+              <Text className="text-lg font-bold text-white">Perfil</Text>
+            ) : (
+              <Text className="text-lg font-bold text-white">Entrar</Text>
+            )}
+            <FontAwesome name="user" size={24} color="white" />
+          </TouchableOpacity>
+        ),
+      }}
       />
 
       <Stack.Screen name="avaluationPage" options={{
@@ -133,10 +134,16 @@ export default function ProductsLayout () {
           backgroundColor: '#130a8f', // Cor do cabeçalho
         },
         headerTitleStyle: {
-          color: '#fff', // Cor do texto do cabeçalho
+          color: '#fff',
         },
+        headerTitleAlign: "center",
         headerShown: true,
         headerTintColor: '#fff', // Cor do botão de voltar
+        headerLeft: () => (
+          <TouchableOpacity className='bg-transparent' onPress={() => router.navigate('config/')}>
+            <AntDesign name="arrowleft" size={24} color="white" />
+          </TouchableOpacity>
+        )
       }} />
 
       <Stack.Screen name="driverSchedule" options={{
