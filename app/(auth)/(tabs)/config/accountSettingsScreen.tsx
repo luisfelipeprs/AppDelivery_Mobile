@@ -1,11 +1,33 @@
+import { useSession } from '@/app/ctx';
+import ResetPassword from '@/services/ResetPassword';
+import { router } from 'expo-router';
 import React from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { View, Text, TouchableOpacity, ScrollView, Switch } from 'react-native';
 
-export default function AccountSettingsScreen () {
+export default function AccountSettingsScreen() {
   const [isNotificationsEnabled, setIsNotificationsEnabled] = React.useState(false);
+  const { userAccount, signOut } = useSession()
 
   const toggleNotifications = () => setIsNotificationsEnabled(previousState => !previousState);
 
+  const handleResetPassword = async () => {
+    const dataUser = {
+      email: userAccount?.email!,
+      typeEntity: userAccount?.typeAccount!
+    }
+    await ResetPassword(dataUser)
+    router.push({
+      pathname: 'config/confirm-reset-password-account',
+      params: { email: userAccount?.email },
+    })
+  }
+  const handleSignOut = async () => {
+    await AsyncStorage.removeItem('email')
+    await AsyncStorage.removeItem('password')
+    signOut()
+    router.replace('/')
+  }
   return (
     <View className={"flex-1 bg-white py-4"}>
 
@@ -18,15 +40,15 @@ export default function AccountSettingsScreen () {
 
           <TouchableOpacity className={"bg-gray-100 p-4 mb-2 rounded-lg"}>
             <Text className={"text-lg text-black"}>Nome Completo</Text>
-            <Text className={"text-base text-gray-600 mt-1"}>Maria Oliveira</Text>
+            <Text className={"text-base text-gray-600 mt-1"}>{userAccount?.nome}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity className={"bg-gray-100 p-4 mb-2 rounded-lg"}>
             <Text className={"text-lg text-black"}>E-mail</Text>
-            <Text className={"text-base text-gray-600 mt-1"}>maria.oliveira@email.com</Text>
+            <Text className={"text-base text-gray-600 mt-1"}>{userAccount?.email}</Text>
           </TouchableOpacity>
-
-          <TouchableOpacity className={"bg-gray-100 p-4 mb-2 rounded-lg"}>
+        </View>
+        {/* <TouchableOpacity className={"bg-gray-100 p-4 mb-2 rounded-lg"}>
             <Text className={"text-lg text-black"}>Número de Telefone</Text>
             <Text className={"text-base text-gray-600 mt-1"}>+55 11 99999-9999</Text>
           </TouchableOpacity>
@@ -35,7 +57,7 @@ export default function AccountSettingsScreen () {
             <Text className={"text-lg text-black"}>Endereço</Text>
             <Text className={"text-base text-gray-600 mt-1"}>Av. Paulista, 1000 - São Paulo, SP</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         {/* Seção de Notificações */}
         <View className={"mb-6"}>
@@ -65,13 +87,13 @@ export default function AccountSettingsScreen () {
         <View className={"mb-6"}>
           <Text className={"text-lg font-semibold mb-4"}>Segurança</Text>
 
-          <TouchableOpacity className={"bg-gray-100 p-4 mb-2 rounded-lg"}>
+          <TouchableOpacity className={"bg-gray-100 p-4 mb-2 rounded-lg"} onPress={handleResetPassword}>
             <Text className={"text-lg text-black"}>Alterar Senha</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity className={"bg-gray-100 p-4 mb-2 rounded-lg"}>
+          {/* <TouchableOpacity className={"bg-gray-100 p-4 mb-2 rounded-lg"}>
             <Text className={"text-lg text-black"}>Autenticação em Duas Etapas</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         {/* Seção de Idioma */}
@@ -93,7 +115,7 @@ export default function AccountSettingsScreen () {
 
         {/* Botão de Sair */}
         <View className={"mb-6"}>
-          <TouchableOpacity className={"bg-[#130a8f] p-4 rounded-lg"}>
+          <TouchableOpacity className={"bg-[#130a8f] p-4 rounded-lg"} onPress={handleSignOut}>
             <Text className={"text-center text-white text-lg font-semibold"}>Sair da Conta</Text>
           </TouchableOpacity>
         </View>

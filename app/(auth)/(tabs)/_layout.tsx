@@ -16,7 +16,7 @@ export default function ProductsLayout () {
       signOut();
       router.replace('/');
     } else {
-      router.push('config/accountSettingsScreen');
+      router.navigate('config/accountSettingsScreen');
     }
   };
 
@@ -46,7 +46,7 @@ export default function ProductsLayout () {
               onPress={handlePress}
               className="pr-5 flex flex-row gap-3"
             >
-              {accountType !== 'Guest' ? (
+              {accountType != 'Guest' ? (
                 <Text className="text-lg font-bold text-white">Perfil</Text>
               ) : (
                 <Text className="text-lg font-bold text-white">Entrar</Text>
