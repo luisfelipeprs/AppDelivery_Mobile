@@ -2,37 +2,46 @@ import { FontAwesome } from '@expo/vector-icons';
 import { Redirect, router, Stack } from 'expo-router';
 import { TouchableOpacity } from 'react-native';
 import { Text } from '@/components/Themed';
+import { useSession } from '@/app/ctx';
 
 
 export default function ProductsLayout () {
+  const { userAccount, signOut } = useSession()
+  const accountType = userAccount?.typeAccount
+  const handlePress = () => {
+    if (accountType === 'Guest') {
+      signOut();
+      router.replace('/');
+    } else {
+      router.push('config/accountSettingsScreen');
+    }
+  };
   return (
     <Stack>
-
       <Stack.Screen name="index" options={{
-        title: 'Config',
-        headerStyle: {
-          backgroundColor: '#130a8f', // Cor do cabeçalho
-        },
-        headerTitleStyle: {
-          color: '#fff', // Cor do texto do cabeçalho
-        },
-        headerShown: true,
-        headerTintColor: '#fff', // Cor do botão de voltar
-        headerRight: () => (
-          <TouchableOpacity
-            // onPress={() => router.push('account')}
-            onPress={() => {
-              // router.push('config/accountSettingsScreen')
-              router.push('config/cadastroScreen')
-            }}
-            // style={{ paddingRight: 15, display: 'flex', flexDirection: 'row', alignContent: 'center', gap: 10 }}
-            className='pr-5 flex flex-row gap-3'
-          >
-            <Text className='text-lg'>User</Text>
-            <FontAwesome name="user" size={24} color="white" />
-          </TouchableOpacity>
-        ),
-      }} />
+          title: 'Config',
+          headerStyle: {
+            backgroundColor: '#130a8f', // Cor do cabeçalho
+          },
+          headerTitleStyle: {
+            color: '#fff', // Cor do texto do cabeçalho
+          },
+          headerShown: true,
+          headerTintColor: '#fff', // Cor do botão de voltar
+          headerRight: () => (
+            <TouchableOpacity
+              onPress={handlePress}
+              className="pr-5 flex flex-row gap-3">
+              {accountType !== 'Guest' ? (
+                <Text className="text-lg font-bold text-white">Perfil</Text>
+              ) : (
+                <Text className="text-lg font-bold text-white">Entrar</Text>
+              )}
+              <FontAwesome name="user" size={24} color="white" />
+            </TouchableOpacity>
+          ),
+        }}
+      />
 
       <Stack.Screen name="avaluationPage" options={{
         title: 'avaluationPage',

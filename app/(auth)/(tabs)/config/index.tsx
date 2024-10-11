@@ -14,31 +14,35 @@ export default function ConfigScreen () {
     signOut();
     router.replace('/');  // Navega para a tela inicial após o logout
   };
-  
 
-  type UserType = 'driver' | 'company' | 'consumer';
 
-  let accountType = 'driver' as UserType;
+  const { userAccount } = useSession()
+
+  let accountType = userAccount?.typeAccount!
+  console.log("accountType > ", accountType);
+
 
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
       <ScrollView className='my-6 mx-2'>
         {/* Section: Pedidos */}
-        {(accountType == 'consumer' || accountType == 'company') && (
+        {(accountType == 'Consumer' || accountType == 'Company') && (
           <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/avaluationPage') }}>
             <FontAwesome name="list" size={24} color="#130a8f" />
             <Text className="ml-3 text-lg font-semibold text-gray-800">Avaliar - motoqueiro (cliente|empresa)</Text>
           </TouchableOpacity>
         )}
 
-        {/* Section: Entregas */}
-        {/* <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/cadastroScreen') }}>
-          <FontAwesome name="truck" size={24} color="#130a8f" />
-          <Text className="ml-3 text-lg font-semibold text-gray-800">Cadastrar-se</Text>
-        </TouchableOpacity> */}
+        {/* Section: Entregas
+        {(accountType == 'guest') && (
+          <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={handleSignOut}>
+            <FontAwesome name="user" size={24} color="#130a8f" />
+            <Text className="ml-3 text-lg font-semibold text-gray-800">Entrar</Text>
+          </TouchableOpacity>
+        )} */}
 
         {/* Section: Configurações de Entrega */}
-        {(accountType == 'driver') && (
+        {(accountType == 'Driver') && (
           <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/orderAcceptanceScreen') }}>
             <FontAwesome name="ticket" size={24} color="#130a8f" />
             <Text className="ml-3 text-lg font-semibold text-gray-800">Pedidos disponíveis (motoqueiro)</Text>
@@ -46,7 +50,7 @@ export default function ConfigScreen () {
         )}
 
         {/* Section: Configurações de Entrega */}
-        {(accountType == 'consumer' || accountType == 'company') && (
+        {(accountType == 'Consumer' || accountType == 'Company') && (
           <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/deliveryHistory') }}>
             <FontAwesome name="list-ol" size={24} color="#130a8f" />
             <Text className="ml-3 text-lg font-semibold text-gray-800">Histórico de pedidos (cliente|empresa)</Text>
@@ -54,7 +58,7 @@ export default function ConfigScreen () {
         )}
 
         {/* Section: Configurações de Entrega */}
-        {(accountType == 'driver' || accountType == 'company') && (
+        {(accountType == 'Driver' || accountType == 'Company') && (
           <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/supportScreen') }}>
             <FontAwesome name="warning" size={24} color="#130a8f" />
             <Text className="ml-3 text-lg font-semibold text-gray-800">Denuncia (empresa|motorista)</Text>
@@ -76,7 +80,7 @@ export default function ConfigScreen () {
         </TouchableOpacity> */}
 
         {/* Section: Configurações de Entrega */}
-        {(accountType == 'company') && (
+        {(accountType == 'Company') && (
           <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={() => { router.push('config/driverSchedule') }}>
             <FontAwesome name="cogs" size={24} color="#130a8f" />
             <Text className="ml-3 text-lg font-semibold text-gray-800">Turnos de trabalho (empresa)</Text>
@@ -90,10 +94,12 @@ export default function ConfigScreen () {
         </TouchableOpacity> */}
 
         {/* Section: Sair */}
-        <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={handleSignOut}>
-          <FontAwesome name="sign-out" size={24} color="#130a8f" />
-          <Text className="ml-3 text-lg font-semibold text-gray-800">Sair</Text>
-        </TouchableOpacity>
+        {(accountType != 'Guest') && (
+          <TouchableOpacity className="flex-row items-center bg-white p-4 rounded-lg shadow-md mb-3" onPress={handleSignOut}>
+            <FontAwesome name="sign-out" size={24} color="#130a8f" />
+            <Text className="ml-3 text-lg font-semibold text-gray-800">Sair</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
