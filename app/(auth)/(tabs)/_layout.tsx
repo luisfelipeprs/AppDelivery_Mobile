@@ -5,9 +5,20 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Text } from '@/components/Themed';
 import { TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSession } from '@/app/ctx';
 
 export default function ProductsLayout () {
   const router = useRouter();
+  const { userAccount, signOut } = useSession()
+  const accountType = userAccount?.typeAccount
+  const handlePress = () => {
+    if (accountType === 'Guest') {
+      signOut();
+      router.replace('/');
+    } else {
+      router.push('config/accountSettingsScreen');
+    }
+  };
 
   return (
     <Tabs>
@@ -32,15 +43,14 @@ export default function ProductsLayout () {
           headerShown: true,
           headerRight: () => (
             <TouchableOpacity
-              // onPress={() => router.push('account')}
-              onPress={() => {
-                // router.push('config/accountSettingsScreen')
-                router.push('config/cadastroScreen')
-              }}
-              // style={{ paddingRight: 15, display: 'flex', flexDirection: 'row', alignContent: 'center', gap: 10 }}
-              className='pr-5 flex flex-row gap-3'
+              onPress={handlePress}
+              className="pr-5 flex flex-row gap-3"
             >
-              <Text className='text-lg'>User</Text>
+              {accountType !== 'Guest' ? (
+                <Text className="text-lg font-bold text-white">Perfil</Text>
+              ) : (
+                <Text className="text-lg font-bold text-white">Entrar</Text>
+              )}
               <FontAwesome name="user" size={24} color="white" />
             </TouchableOpacity>
           ),
@@ -100,15 +110,14 @@ export default function ProductsLayout () {
           headerShown: true,
           headerRight: () => (
             <TouchableOpacity
-              // onPress={() => router.push('account')}
-              onPress={() => {
-                // router.push('config/accountSettingsScreen')
-                router.push('config/cadastroScreen')
-              }}
-              // style={{ paddingRight: 15, display: 'flex', flexDirection: 'row', alignContent: 'center', gap: 10 }}
-              className='pr-5 flex flex-row gap-3'
+              onPress={handlePress}
+              className="pr-5 flex flex-row gap-3"
             >
-              <Text className='text-lg'>User</Text>
+              {accountType !== 'Guest' ? (
+                <Text className="text-lg font-bold text-white">Perfil</Text>
+              ) : (
+                <Text className="text-lg font-bold text-white">Entrar</Text>
+              )}
               <FontAwesome name="user" size={24} color="white" />
             </TouchableOpacity>
           ),

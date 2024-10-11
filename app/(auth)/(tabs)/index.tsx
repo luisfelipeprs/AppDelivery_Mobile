@@ -5,6 +5,8 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import axios from 'axios';
 import * as Location from 'expo-location';
+import { useSession } from '@/app/ctx';
+import { router } from 'expo-router';
 
 const GOOGLE_MAPS_APIKEY = 'AIzaSyD6s-ANYihojvPFSAhOuIpCKpknzNg6Bts';
 
@@ -30,7 +32,8 @@ const DeliveryRouteScreen: React.FC = () => {
   const [deliveryPosition, setDeliveryPosition] = useState<Coordinates | null>(null); // Adicionado
   const mapRef = useRef<MapView>(null);
   const deliveryIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
+  const { userAccount, signOut } = useSession();
+  const accountType = userAccount?.typeAccount
   useEffect(() => {
     const getLocation = async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -136,14 +139,31 @@ const DeliveryRouteScreen: React.FC = () => {
     setIsVisible(!isVisible);
   };
 
+  const handleSignOut = async () => {
+    signOut();
+    router.replace('/');
+  };
+
   const handleStartDelivery = () => {
+    if (accountType === 'Guest') {
+      Alert.alert(
+        'Ação restrita',
+        'Você precisa estar logado para iniciar uma entrega.',
+        [
+          { text: 'Loggar', onPress: handleSignOut },
+          { text: 'Cancelar', style: 'cancel' },
+        ]
+      );
+      return;
+    }
+
     if (!currentLocation) {
       Alert.alert('Erro', 'Não foi possível obter sua localização atual.');
       return;
     }
+
     setDeliveryStarted(true);
     setDeliveryPosition(currentLocation);
-    toggleVisibility();
   };
 
   const handlePlaceSelect = async (data: any, details: any, setLocation: React.Dispatch<React.SetStateAction<Coordinates | null>>) => {

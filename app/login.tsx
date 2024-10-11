@@ -8,13 +8,13 @@ import LoginCompany from '@/services/LoginCompany';
 import loginConsumer from '@/services/LoginConsumer';
 
 export default function Login() {
-  const { signIn } = useSession();
+  const { signIn, signInAsGuest } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [userType, setUserType] = useState<'Company' | 'Consumer' | 'Driver'>('Consumer');
 
   useEffect(() => {
-    AsyncStorage.setItem('domain', "https://c62d-187-108-255-14.ngrok-free.app"); // domínio do backend
+    AsyncStorage.setItem('domain', "https://d3de-187-108-255-14.ngrok-free.app"); // domínio do backend
     checkLogin();
   }, []);
 
@@ -64,11 +64,17 @@ export default function Login() {
   };
 
   const handleRegister = () => {
-    router.push('/register-consumer');
+    router.push('/register-driver');
   };
 
   const handleUserTypeChange = (type: 'Company' | 'Consumer' | 'Driver') => {
     setUserType(type);
+  };
+
+  // Modo Guest (Entrar como convidado) possui restriçoes de usabilidade
+  const handleGuestLogin = () => {
+    signInAsGuest();
+    router.replace('/');
   };
 
   return (
@@ -83,7 +89,7 @@ export default function Login() {
             Delivery<Text className="text-[#130a8f]">Já</Text>
           </Text>
         </View>
-        
+
         <View className="mb-4">
           <Text className="text-white mb-2 font-bold">Tipo de Usuário:</Text>
           <View className="flex-row justify-between">
@@ -125,22 +131,26 @@ export default function Login() {
           className="p-4 mb-6 border border-gray-300 rounded bg-white/90 shadow-md"
           placeholderTextColor="#888"
         />
-        
         <TouchableOpacity
           onPress={() => handleLogin(email, password)}
-          className="bg-[#130a8f] p-4 rounded mb-4 shadow-lg"
+          className="p-4 bg-[#130a8f] rounded-full"
         >
-          <Text className="text-white text-center text-lg">Login</Text>
+          <Text className="text-center text-white font-bold">Entrar</Text>
         </TouchableOpacity>
+
 
         <TouchableOpacity
           onPress={handleRegister}
-          className="bg-blue-500 p-4 rounded mb-6 shadow-lg"
+          className="p-4 bg-blue-500 rounded-full mt-4"
         >
-          <Text className="text-white text-center text-lg">Registrar</Text>
+          <Text className="text-center text-white font-bold">Registrar-se</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push('/forgot-password')}>
-          <Text className="text-center text-blue-300">Esqueceu a senha?</Text>
+
+        <TouchableOpacity
+          onPress={handleGuestLogin}
+          className="p-4 bg-gray-600 rounded-full mt-4"
+        >
+          <Text className="text-center text-white font-bold">Entrar como Convidado</Text>
         </TouchableOpacity>
       </View>
     </View>
