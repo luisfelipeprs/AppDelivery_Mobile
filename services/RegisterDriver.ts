@@ -8,7 +8,7 @@ export interface DriverData {
   cnh: string;
   vehicle: string;
   documentationVehicle: string;
-  typeDriver: 'Car' | 'MotorCycle';
+  typeDriver: 'Car' | 'Motorcycle';
   companyId: string | null;
   active: boolean;
   createdOn: string;

@@ -12,7 +12,7 @@ export default function RegisterDriverForm() {
     cnh: '',
     vehicle: '',
     documentationVehicle: '',
-    typeDriver: 'Car' as 'Car' | 'MotorCycle',
+    typeDriver: 'Car' as 'Car' | 'Motorcycle',
   });
 
   const { signIn } = useSession();
@@ -119,8 +119,8 @@ export default function RegisterDriverForm() {
             <Text className="text-center">Carro</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => handleInputChange('typeDriver', 'MotorCycle')}
-            className={`p-4 border border-gray-300 rounded ${driverData.typeDriver === 'MotorCycle' ? 'bg-blue-500' : 'bg-white/90'}`}
+            onPress={() => handleInputChange('typeDriver', 'Motorcycle')}
+            className={`p-4 border border-gray-300 rounded ${driverData.typeDriver === 'Motorcycle' ? 'bg-blue-500' : 'bg-white/90'}`}
           >
             <Text className="text-center">Moto</Text>
           </TouchableOpacity>

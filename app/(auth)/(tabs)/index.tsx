@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, Modal } from 'react-native';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import axios from 'axios';
 import * as Location from 'expo-location';
 import { useSession } from '@/app/ctx';
 import { router } from 'expo-router';
+import ModalOrder from '../modal-order';
 
 const GOOGLE_MAPS_APIKEY = 'AIzaSyD6s-ANYihojvPFSAhOuIpCKpknzNg6Bts';
 
@@ -20,6 +21,7 @@ const DeliveryRouteScreen: React.FC = () => {
   const [destination, setDestination] = useState<Coordinates | null>(null);
   const [stops, setStops] = useState<(Coordinates | null)[]>([]);
   const [routeVisible, setRouteVisible] = useState<boolean>(false);
+  const [modalOrderVisible, setModalOrderVisible] = useState<boolean>(false);
   const [deliveryStarted, setDeliveryStarted] = useState<boolean>(false);
   const [currentLocation, setCurrentLocation] = useState<Coordinates | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
@@ -27,6 +29,16 @@ const DeliveryRouteScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [stopDistances, setStopDistances] = useState<number[]>([]);
   const [stopDurations, setStopDurations] = useState<number[]>([]);
+  const [companyId, setCompanyId] = useState<string | null>();
+  const [consumerId, setConsumerId] = useState<string | null>();
+  const [modalData, setModalData] = useState({
+    senderLatitude: 0,
+    senderLongitude: 0,
+    stopLatitude: 0,
+    stopLongitude: 0,
+    recipientLatitude: 0,
+    recipientLongitude: 0,
+  });
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [estimatedArrivalTimes, setEstimatedArrivalTimes] = useState<string[]>([]);
   const [deliveryPosition, setDeliveryPosition] = useState<Coordinates | null>(null); // Adicionado
@@ -72,11 +84,9 @@ const DeliveryRouteScreen: React.FC = () => {
           });
         }
       }, 5000); // Atualizar a cada 5 segundos
-    } else {
-      if (deliveryIntervalRef.current) {
-        clearInterval(deliveryIntervalRef.current);
-        deliveryIntervalRef.current = null;
-      }
+    } else if (deliveryIntervalRef.current) {
+      clearInterval(deliveryIntervalRef.current);
+      deliveryIntervalRef.current = null;
     }
   }, [deliveryStarted, deliveryPosition]);
 
@@ -90,6 +100,21 @@ const DeliveryRouteScreen: React.FC = () => {
       });
     }
   }, [deliveryPosition]);
+
+  useEffect(() => {
+    if (accountType === "Company") {
+      setCompanyId(userAccount?.id || null);
+      setConsumerId(null);
+    } else if (accountType === "Consumer") {
+      setConsumerId(userAccount?.id || null);
+      setCompanyId(null);
+    } else {
+      // Se houver um caso em que accountType não é nem Company nem Consumer, você pode tratar aqui.
+      setCompanyId(null);
+      setConsumerId(null);
+    }
+  }, [accountType, userAccount?.id]);
+  
 
   const handleGenerateRoute = async () => {
     if (!origin || !destination) {
@@ -150,7 +175,7 @@ const DeliveryRouteScreen: React.FC = () => {
         'Ação restrita',
         'Você precisa estar logado para iniciar uma entrega.',
         [
-          { text: 'Loggar', onPress: handleSignOut },
+          { text: 'Loggar', onPress: () => handleSignOut },
           { text: 'Cancelar', style: 'cancel' },
         ]
       );
@@ -161,9 +186,17 @@ const DeliveryRouteScreen: React.FC = () => {
       Alert.alert('Erro', 'Não foi possível obter sua localização atual.');
       return;
     }
-
+    if (accountType == "Company"){
+      setCompanyId(userAccount?.id)
+      setConsumerId(null)
+    }
+    else if (accountType == "Consumer"){
+      setConsumerId(userAccount?.id)
+      setCompanyId(null)
+    }
     setDeliveryStarted(true);
     setDeliveryPosition(currentLocation);
+    setModalOrderVisible(true);
   };
 
   const handlePlaceSelect = async (data: any, details: any, setLocation: React.Dispatch<React.SetStateAction<Coordinates | null>>) => {
@@ -235,11 +268,17 @@ const DeliveryRouteScreen: React.FC = () => {
       const updatedStops = [...stops];
       updatedStops[index] = coords;
       setStops(updatedStops);
+  
+      setModalData((prevModalData) => ({
+        ...prevModalData,
+        stopLatitude: coords.latitude,
+        stopLongitude: coords.longitude,
+      }));
     } else {
       setError('Não foi possível obter as coordenadas para o endereço fornecido.');
     }
   };
-
+  
   return (
     <View className='flex-1'>
       <MapView
@@ -336,7 +375,22 @@ const DeliveryRouteScreen: React.FC = () => {
           <Text className='text-white text-base'>Iniciar Entrega</Text>
         </TouchableOpacity>
       </View>
-
+      {modalOrderVisible && (
+         <ModalOrder
+           visible={modalOrderVisible}
+           onClose={() => setModalOrderVisible(false)}
+           senderLatitude={origin?.latitude!}
+           senderLongitude={origin?.longitude!}
+           stopLatitude={modalData.stopLatitude}
+           stopLongitude={modalData.stopLongitude}
+           recipientLatitude={destination?.latitude}
+           recipientLongitude={destination?.longitude}
+           companyId={companyId!}
+           consumerId={consumerId!}
+           deliveryId={null}
+           status='Available'
+         />
+      )}
       {routeVisible && (
         <View className='mt-2 py-2 bg-orange-500 rounded-md flex justify-center items-center pb-8'>
           <Text className='text-base text-bold text-white'>Distância Total: {distance ? `${distance.toFixed(2)} km` : 'N/A'}</Text>
