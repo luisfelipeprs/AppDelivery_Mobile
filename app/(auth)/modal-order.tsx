@@ -15,6 +15,7 @@ interface ModalProps {
   consumerId: string | null;
   companyId: string | null;
   visible: boolean;
+  handleSubmitModal: (idOrder: string ) => void;
   onClose: () => void;
 }
 
@@ -40,7 +41,8 @@ interface FormDataType {
 
 const ModalOrder: React.FC<ModalProps> = ({
   visible, 
-  onClose,  
+  onClose,
+  handleSubmitModal,  
   senderLatitude, 
   senderLongitude, 
   stopLatitude, 
@@ -81,11 +83,15 @@ const ModalOrder: React.FC<ModalProps> = ({
       consumerId,
       companyId
     };
-
+    
     try {
-      await CreateOrder(formData);
+      const response = await CreateOrder(formData);
       Alert.alert("Pedido criado!", "Seu pedido foi criado com sucesso.");
       onClose(); // Fecha o modal após o envio
+      if (handleSubmitModal) {
+        console.log('Chamando handleSubmitModal com ID:', response.orderId);
+        handleSubmitModal(response.orderId);  // Verifica se o ID é passado corretamente
+      }
     } catch (error) {
       console.error(error);
       Alert.alert("Erro", "Houve um problema ao criar o pedido. Tente novamente.");
@@ -95,8 +101,7 @@ const ModalOrder: React.FC<ModalProps> = ({
   const handleModalClose = () => {
     onClose();
   }
-  console.log(companyId, consumerId, deliveryId);
-  
+
   return (
     <Modal visible={visible} transparent={true} animationType="slide">
       <TouchableOpacity className='flex-1 justify-center items-center bg-[#00000081] bg-opacity-50' onPress={handleModalClose}>

@@ -8,6 +8,7 @@ import * as Location from 'expo-location';
 import { useSession } from '@/app/ctx';
 import { router } from 'expo-router';
 import ModalOrder from '../modal-order';
+import { useWebSocketTracking } from '@/services/WebSocketTracking';
 
 const GOOGLE_MAPS_APIKEY = 'AIzaSyD6s-ANYihojvPFSAhOuIpCKpknzNg6Bts';
 
@@ -31,6 +32,7 @@ const DeliveryRouteScreen: React.FC = () => {
   const [stopDurations, setStopDurations] = useState<number[]>([]);
   const [companyId, setCompanyId] = useState<string | null>();
   const [consumerId, setConsumerId] = useState<string | null>();
+  const [orderId, setOrderId] = useState<string | null>(null);
   const [modalData, setModalData] = useState({
     senderLatitude: 0,
     senderLongitude: 0,
@@ -83,7 +85,7 @@ const DeliveryRouteScreen: React.FC = () => {
             longitude: location.coords.longitude,
           });
         }
-      }, 5000); // Atualizar a cada 5 segundos
+      }, 5000); // Atualizar a cada 5 segundos 
     } else if (deliveryIntervalRef.current) {
       clearInterval(deliveryIntervalRef.current);
       deliveryIntervalRef.current = null;
@@ -114,7 +116,7 @@ const DeliveryRouteScreen: React.FC = () => {
       setConsumerId(null);
     }
   }, [accountType, userAccount?.id]);
-  
+
 
   const handleGenerateRoute = async () => {
     if (!origin || !destination) {
@@ -181,22 +183,26 @@ const DeliveryRouteScreen: React.FC = () => {
       );
       return;
     }
-
-    if (!currentLocation) {
-      Alert.alert('Erro', 'Não foi possível obter sua localização atual.');
-      return;
+    if (!origin || !destination) {
+      Alert.alert('Erro ao iniciar entrega', 'Defina um ponto de origem e destino')
     }
-    if (accountType == "Company"){
-      setCompanyId(userAccount?.id)
-      setConsumerId(null)
+    else {
+      if (!currentLocation) {
+        Alert.alert('Erro', 'Não foi possível obter sua localização atual.');
+        return;
+      }
+      if (accountType == "Company") {
+        setCompanyId(userAccount?.id)
+        setConsumerId(null)
+      }
+      else if (accountType == "Consumer") {
+        setConsumerId(userAccount?.id)
+        setCompanyId(null)
+      }
+      // setDeliveryStarted(true); // isso aqui da o erro: Error: Request has not been opened, js engine: hermes
+      setDeliveryPosition(currentLocation);
+      setModalOrderVisible(true);
     }
-    else if (accountType == "Consumer"){
-      setConsumerId(userAccount?.id)
-      setCompanyId(null)
-    }
-    setDeliveryStarted(true);
-    setDeliveryPosition(currentLocation);
-    setModalOrderVisible(true);
   };
 
   const handlePlaceSelect = async (data: any, details: any, setLocation: React.Dispatch<React.SetStateAction<Coordinates | null>>) => {
@@ -268,7 +274,7 @@ const DeliveryRouteScreen: React.FC = () => {
       const updatedStops = [...stops];
       updatedStops[index] = coords;
       setStops(updatedStops);
-  
+
       setModalData((prevModalData) => ({
         ...prevModalData,
         stopLatitude: coords.latitude,
@@ -278,7 +284,39 @@ const DeliveryRouteScreen: React.FC = () => {
       setError('Não foi possível obter as coordenadas para o endereço fornecido.');
     }
   };
-  
+
+
+
+const handleSubmitModal = (idOrder: string) => {
+    console.log('Recebido ID da ordem:', idOrder);
+    setOrderId(idOrder);
+    setModalOrderVisible(false);
+    Alert.alert('Sucesso', `Pedido criado com o ID: ${idOrder}`);
+
+    // Conecte ao WebSocket passando o orderId
+    connect(idOrder);
+};
+
+// Defina as funções de callback para manipular as mensagens
+const handleMessage = (data: any) => {
+    // Lógica para lidar com mensagens recebidas
+    console.log('Mensagem recebida:', data);
+};
+
+const handleError = (error: string) => {
+    // Lógica para lidar com erros
+    console.error('Erro no WebSocket:', error);
+};
+
+const handleClose = (event: CloseEvent) => {
+    // Lógica para lidar com o fechamento da conexão
+    console.log('Conexão WebSocket fechada:', event);
+};
+const { connect, closeConnection, connectionStatus } = useWebSocketTracking(
+  handleMessage,
+  handleError,
+  handleClose
+);
   return (
     <View className='flex-1'>
       <MapView
@@ -376,20 +414,21 @@ const DeliveryRouteScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
       {modalOrderVisible && (
-         <ModalOrder
-           visible={modalOrderVisible}
-           onClose={() => setModalOrderVisible(false)}
-           senderLatitude={origin?.latitude!}
-           senderLongitude={origin?.longitude!}
-           stopLatitude={modalData.stopLatitude}
-           stopLongitude={modalData.stopLongitude}
-           recipientLatitude={destination?.latitude}
-           recipientLongitude={destination?.longitude}
-           companyId={companyId!}
-           consumerId={consumerId!}
-           deliveryId={null}
-           status='Available'
-         />
+        <ModalOrder
+          visible={modalOrderVisible}
+          onClose={() => setModalOrderVisible(false)}
+          handleSubmitModal={handleSubmitModal}
+          senderLatitude={origin?.latitude!}
+          senderLongitude={origin?.longitude!}
+          stopLatitude={modalData.stopLatitude}
+          stopLongitude={modalData.stopLongitude}
+          recipientLatitude={destination?.latitude}
+          recipientLongitude={destination?.longitude}
+          companyId={companyId!}
+          consumerId={consumerId!}
+          deliveryId={null}
+          status='Available'
+        />
       )}
       {routeVisible && (
         <View className='mt-2 py-2 bg-orange-500 rounded-md flex justify-center items-center pb-8'>

@@ -28,14 +28,10 @@ export async function CreateOrder(dataOrder: DataOrderProps) {
     if (!dominio) {
       throw new Error('Domínio ou porta não encontrados no AsyncStorage');
     }
-    console.log("enrou aa");
     
 
     const url = `${dominio}/order/`;
-    console.log(
-      "gere>>>>",
-      url, dataOrder);
-
+    
     const response = await axios.post(url, dataOrder, {
       headers: {
         'Content-Type': 'application/json',
