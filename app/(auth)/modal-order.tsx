@@ -86,7 +86,7 @@ const ModalOrder: React.FC<ModalProps> = ({
     
     try {
       const response = await CreateOrder(formData);
-      Alert.alert("Pedido criado!", "Seu pedido foi criado com sucesso.");
+      console.log("Pedido criado!", "Seu pedido foi criado com sucesso.");
       onClose(); // Fecha o modal após o envio
       if (handleSubmitModal) {
         console.log('Chamando handleSubmitModal com ID:', response.orderId);

@@ -70,7 +70,9 @@ export default function ProductsLayout () {
       }} />
 
       <Stack.Screen name="orderAcceptanceScreen" options={{
-        title: 'orderAcceptanceScreen',
+        title: 'Pedido Disponíveis',
+        headerTitleAlign: 'center',
+        headerBackButtonMenuEnabled: true,
         headerStyle: {
           backgroundColor: '#130a8f', // Cor do cabeçalho
         },
@@ -79,6 +81,11 @@ export default function ProductsLayout () {
         },
         headerShown: true,
         headerTintColor: '#fff', // Cor do botão de voltar
+        headerLeft: () => (
+          <TouchableOpacity className='bg-transparent' onPress={() => router.navigate('/')}>
+            <AntDesign name="arrowleft" size={24} color="white" />
+          </TouchableOpacity>
+        )
       }} />
 
       <Stack.Screen name="deliveryHistory" options={{

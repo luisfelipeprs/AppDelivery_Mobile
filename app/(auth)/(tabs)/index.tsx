@@ -1,14 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
-import { View, Text, TouchableOpacity, Alert, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, Modal, Image } from 'react-native';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import axios from 'axios';
 import * as Location from 'expo-location';
 import { useSession } from '@/app/ctx';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import ModalOrder from '../modal-order';
 import { useWebSocketTracking } from '@/services/WebSocketTracking';
+import ModalWaitingAcceptDelivery from '../modal-waiting-accept-delivery';
+import CreateDelivery, { CreateDeliveryProps, StatusDelivery } from '@/services/CreateDelivery';
 
 const GOOGLE_MAPS_APIKEY = 'AIzaSyD6s-ANYihojvPFSAhOuIpCKpknzNg6Bts';
 
@@ -23,6 +25,7 @@ const DeliveryRouteScreen: React.FC = () => {
   const [stops, setStops] = useState<(Coordinates | null)[]>([]);
   const [routeVisible, setRouteVisible] = useState<boolean>(false);
   const [modalOrderVisible, setModalOrderVisible] = useState<boolean>(false);
+  const [modalWaitingAcceptDelivery, setModalWaitingAcceptDelivery] = useState<boolean>(false);
   const [deliveryStarted, setDeliveryStarted] = useState<boolean>(false);
   const [currentLocation, setCurrentLocation] = useState<Coordinates | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
@@ -44,10 +47,80 @@ const DeliveryRouteScreen: React.FC = () => {
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [estimatedArrivalTimes, setEstimatedArrivalTimes] = useState<string[]>([]);
   const [deliveryPosition, setDeliveryPosition] = useState<Coordinates | null>(null); // Adicionado
+  const [driverPosition, setDriverPosition] = useState<Coordinates | null>(null);
   const mapRef = useRef<MapView>(null);
   const deliveryIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const { userAccount, signOut } = useSession();
   const accountType = userAccount?.typeAccount
+  const { isAcceptedOrder, orderIdAccepted } = useLocalSearchParams();
+  const intervalRef = useRef<NodeJS.Timeout | null>(null); // Referência para armazenar o intervalo
+
+  useEffect(() => {
+    const fetchLocationAndConnect = async () => {
+      if (accountType === 'Driver') {
+        if (isAcceptedOrder === 'true') {
+          const orderId = Array.isArray(orderIdAccepted) ? orderIdAccepted[0] : orderIdAccepted;
+          const dataDelivery: CreateDeliveryProps = {
+            orderId: orderId!,
+            status: 'NotStarted' as StatusDelivery,
+            deliveryPersonId: userAccount?.id!,
+          };
+
+          // const response = await CreateDelivery(dataDelivery);
+          // console.log("criado o delivery > ", response);
+
+          connect(orderId!); // Conectar a ordem
+
+          // Solicitar permissões de geolocalização
+          const { status } = await Location.requestForegroundPermissionsAsync();
+
+          if (status === 'granted') {
+            // Função para obter a localização e enviar via WebSocket
+            console.log('granted');
+
+            const sendLocation = async () => {
+              const location = await Location.getCurrentPositionAsync({});
+              const { latitude, longitude } = location.coords;
+
+              // Enviar a localização para os clientes via WebSocket
+              sendMessage(JSON.stringify({ orderId, latitude, longitude }));
+            };
+
+            // Chama sendLocation imediatamente
+            await sendLocation();
+
+            // Configura o intervalo para enviar a localização a cada 4 segundos
+            intervalRef.current = setInterval(sendLocation, 4000);
+          } else {
+            console.log("Permissão de geolocalização não concedida.");
+          }
+        } else {
+          console.log('A ordem não foi aceita.');
+        }
+      }
+    };
+
+    fetchLocationAndConnect();
+
+    // Limpa o intervalo ao desmontar o componente
+  }, [isAcceptedOrder, orderIdAccepted]);
+
+  useEffect(() => {
+    console.log("Driver Position: ", driverPosition);
+    console.log("Origin: ", origin);
+  }, [driverPosition, origin]);
+
+
+  useEffect(() => {
+    if (deliveryPosition) { // movimenta a camera
+      // mapRef.current?.animateCamera({
+      //   center: deliveryPosition,
+      //   pitch: 0,
+      //   heading: 0,
+      //   zoom: 15,
+      // });
+    }
+  }, [deliveryPosition]);
   useEffect(() => {
     const getLocation = async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -85,12 +158,13 @@ const DeliveryRouteScreen: React.FC = () => {
             longitude: location.coords.longitude,
           });
         }
-      }, 5000); // Atualizar a cada 5 segundos 
+      }, 5000);
     } else if (deliveryIntervalRef.current) {
       clearInterval(deliveryIntervalRef.current);
       deliveryIntervalRef.current = null;
     }
   }, [deliveryStarted, deliveryPosition]);
+
 
   useEffect(() => {
     if (deliveryPosition) {
@@ -199,8 +273,8 @@ const DeliveryRouteScreen: React.FC = () => {
         setConsumerId(userAccount?.id)
         setCompanyId(null)
       }
-      // setDeliveryStarted(true); // isso aqui da o erro: Error: Request has not been opened, js engine: hermes
-      setDeliveryPosition(currentLocation);
+      setDeliveryStarted(true); // isso aqui da o erro: Error: Request has not been opened, js engine: hermes
+      // setDeliveryPosition(currentLocation);
       setModalOrderVisible(true);
     }
   };
@@ -248,7 +322,7 @@ const DeliveryRouteScreen: React.FC = () => {
       });
       const route = response.data.routes[0];
       const distance = route.legs[0].distance.value / 1000; // em km
-      const duration = route.legs[0].duration.value / 60; // em minutos
+      const duration = route.legs[0].duration.value / 60; // em minutos  
       return { distance, duration };
     } catch (error) {
       console.error(error);
@@ -287,53 +361,69 @@ const DeliveryRouteScreen: React.FC = () => {
 
 
 
-const handleSubmitModal = (idOrder: string) => {
+  const handleSubmitModal = (idOrder: string) => {
     console.log('Recebido ID da ordem:', idOrder);
     setOrderId(idOrder);
     setModalOrderVisible(false);
-    Alert.alert('Sucesso', `Pedido criado com o ID: ${idOrder}`);
-
-    // Conecte ao WebSocket passando o orderId
+    console.log('Sucesso', `Pedido criado com o ID: ${idOrder}`);
     connect(idOrder);
-};
+    setModalWaitingAcceptDelivery(true);
+  };
 
-// Defina as funções de callback para manipular as mensagens
-const handleMessage = (data: any) => {
-    // Lógica para lidar com mensagens recebidas
+  const handleCancelModalWaitingAcceptDelivery = () => {
+    closeConnection(orderId!);
+    setModalWaitingAcceptDelivery(false)
+  };
+
+  const handleMessage = (data: any) => {
+    const { latitude, longitude } = data;
+    setModalWaitingAcceptDelivery(false)
     console.log('Mensagem recebida:', data);
-};
+    setDriverPosition({
+      latitude,
+      longitude,
+    });
+  };
 
-const handleError = (error: string) => {
+  const handleError = (error: string) => {
     // Lógica para lidar com erros
     console.error('Erro no WebSocket:', error);
-};
+  };
 
-const handleClose = (event: CloseEvent) => {
+  const handleClose = (event: CloseEvent) => {
     // Lógica para lidar com o fechamento da conexão
     console.log('Conexão WebSocket fechada:', event);
-};
-const { connect, closeConnection, connectionStatus } = useWebSocketTracking(
-  handleMessage,
-  handleError,
-  handleClose
-);
+  };
+  const { connect, closeConnection, sendMessage, sendLocationUpdate, connectionStatus } = useWebSocketTracking(
+    handleMessage,
+    handleError,
+    handleClose
+  );
+
+  const searchDelivery = () => {
+    router.push('/config/orderAcceptanceScreen')
+
+  }
+  const handleConfirmPickedUpOrder = () => {
+    
+  }
   return (
     <View className='flex-1'>
       <MapView
-        className='flex-1'
-        provider={PROVIDER_GOOGLE}
         ref={mapRef}
+        provider={PROVIDER_GOOGLE}
+        style={{ flex: 1 }}
         initialRegion={{
-          latitude: origin?.latitude || 37.78825,
-          longitude: origin?.longitude || -122.4324,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
+          latitude: origin?.latitude || 37.4220936, // Posição inicial, pode ser a origem
+          longitude: origin?.longitude || -122.083922,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
         }}
       >
         {origin && <Marker coordinate={origin} title="Início" />}
-        {destination && <Marker coordinate={destination} title="Destino" />}
+        {destination && !driverPosition && <Marker coordinate={destination} title="Destino" />}
         {stops.map((stop, index) => stop && <Marker key={index} coordinate={stop} title={`Parada ${index + 1}`} />)}
-        {routeVisible && origin && destination && (
+        {routeVisible && origin && destination && !driverPosition &&(
           <MapViewDirections
             origin={origin}
             destination={destination}
@@ -351,99 +441,151 @@ const { connect, closeConnection, connectionStatus } = useWebSocketTracking(
             }}
           />
         )}
-        {deliveryPosition && (
-          <Marker coordinate={deliveryPosition} title="Posição do Veículo" pinColor="blue" />
+        {driverPosition && <Marker coordinate={driverPosition} pinColor='blue' title="Posição do entregador" />}
+        {driverPosition && origin && (
+          <MapViewDirections
+            origin={driverPosition}
+            destination={origin}
+            waypoints={stops.filter(Boolean) as Coordinates[]}
+            apikey={GOOGLE_MAPS_APIKEY}
+            strokeWidth={3}
+            strokeColor="blue"
+            optimizeWaypoints={true}
+            onReady={result => {
+              setDistance(result.distance);
+              setDuration(result.duration);
+            }}
+            onError={(errorMessage) => {
+              setError(errorMessage);
+            }}
+          />
         )}
       </MapView>
-
-      <View className='absolute top-5 left-2 right-2 bg-white p-2 rounded-lg shadow-lg'>
-        <GooglePlacesAutocomplete
-          placeholder="Endereço inicial"
-          fetchDetails={true}
-          onPress={(data, details = null) => handlePlaceSelect(data, details, setOrigin)}
-          query={{
-            key: GOOGLE_MAPS_APIKEY,
-            language: 'pt',
-          }}
-          styles={autocompleteStyles}
-        />
-
-        {stops.map((stop, index) => (
-          <View key={index} className='flex flex-row items-center'>
+      {
+        accountType === "Company" || accountType === "Consumer" ? (
+          <View className='absolute top-5 left-2 right-2 bg-white p-2 rounded-lg shadow-lg'>
             <GooglePlacesAutocomplete
-              placeholder={`Parada ${index + 1}`}
+              placeholder="Endereço inicial"
               fetchDetails={true}
-              onPress={(data, details = null) => handleStopChange(data, details, index)}
+              onPress={(data, details = null) => handlePlaceSelect(data, details, setOrigin)}
               query={{
                 key: GOOGLE_MAPS_APIKEY,
                 language: 'pt',
               }}
               styles={autocompleteStyles}
             />
-            <TouchableOpacity className='bg-red-500 rounded-full w-7 h-7 flex justify-center items-center ml-2' onPress={() => removeStop(index)}>
-              <Text className='text-white text-lg leading-none'>×</Text>
+
+            {stops.map((stop, index) => (
+              <View key={index} className='flex flex-row items-center'>
+                <GooglePlacesAutocomplete
+                  placeholder={`Parada ${index + 1}`}
+                  fetchDetails={true}
+                  onPress={(data, details = null) => handleStopChange(data, details, index)}
+                  query={{
+                    key: GOOGLE_MAPS_APIKEY,
+                    language: 'pt',
+                  }}
+                  styles={autocompleteStyles}
+                />
+                <TouchableOpacity className='bg-red-500 rounded-full w-7 h-7 flex justify-center items-center ml-2' onPress={() => removeStop(index)}>
+                  <Text className='text-white text-lg leading-none'>×</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+
+            <TouchableOpacity
+              className={`${stops.length >= 1 ? 'bg-gray-300' : 'bg-blue-500'} mt-2 py-2 rounded-md flex justify-center items-center`}
+              onPress={addStop}
+              disabled={stops.length >= 1}
+            >
+              <Text className='text-white text-base'>+ Adicionar Parada</Text>
+            </TouchableOpacity>
+
+            <GooglePlacesAutocomplete
+              placeholder="Endereço de entrega"
+              fetchDetails={true}
+              onPress={(data, details = null) => handlePlaceSelect(data, details, setDestination)}
+              query={{
+                key: GOOGLE_MAPS_APIKEY,
+                language: 'pt',
+              }}
+              styles={autocompleteStyles}
+            />
+
+            <TouchableOpacity className='mt-2 py-2 bg-green-500 rounded-md flex justify-center items-center' onPress={handleGenerateRoute}>
+              <Text className='text-white text-base'>Gerar Rota</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity className='mt-2 py-2 bg-orange-500 rounded-md flex justify-center items-center' onPress={handleStartDelivery}>
+              <Text className='text-white text-base'>Iniciar Entrega</Text>
             </TouchableOpacity>
           </View>
-        ))}
+        ) : null
+      }
 
+      {
+        (accountType === "Driver" && isAcceptedOrder != 'true') ? (
+          <TouchableOpacity
+            onPress={searchDelivery}
+            className="absolute top-10 left-0 right-0 mx-4 bg-blue-600 p-4 rounded-full shadow-lg"
+          >
+            <Text className="text-white text-center text-lg font-bold">Procurar Pedido</Text>
+          </TouchableOpacity>
+
+        ) : null
+      }
+      {(accountType === "Driver" && isAcceptedOrder == 'true') && (
         <TouchableOpacity
-          className={`${stops.length >= 1 ? 'bg-gray-300' : 'bg-blue-500'} mt-2 py-2 rounded-md flex justify-center items-center`}
-          onPress={addStop}
-          disabled={stops.length >= 1}
+          onPress={handleConfirmPickedUpOrder}
+          className="absolute top-10 left-0 right-0 mx-4 bg-red-600 p-4 rounded-full shadow-lg"
         >
-          <Text className='text-white text-base'>+ Adicionar Parada</Text>
+          <Text className="text-white text-center text-lg font-bold">Confirmar Recebimento do pedido</Text>
         </TouchableOpacity>
-
-        <GooglePlacesAutocomplete
-          placeholder="Endereço de entrega"
-          fetchDetails={true}
-          onPress={(data, details = null) => handlePlaceSelect(data, details, setDestination)}
-          query={{
-            key: GOOGLE_MAPS_APIKEY,
-            language: 'pt',
-          }}
-          styles={autocompleteStyles}
-        />
-
-        <TouchableOpacity className='mt-2 py-2 bg-green-500 rounded-md flex justify-center items-center' onPress={handleGenerateRoute}>
-          <Text className='text-white text-base'>Gerar Rota</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity className='mt-2 py-2 bg-orange-500 rounded-md flex justify-center items-center' onPress={handleStartDelivery}>
-          <Text className='text-white text-base'>Iniciar Entrega</Text>
-        </TouchableOpacity>
-      </View>
-      {modalOrderVisible && (
-        <ModalOrder
-          visible={modalOrderVisible}
-          onClose={() => setModalOrderVisible(false)}
-          handleSubmitModal={handleSubmitModal}
-          senderLatitude={origin?.latitude!}
-          senderLongitude={origin?.longitude!}
-          stopLatitude={modalData.stopLatitude}
-          stopLongitude={modalData.stopLongitude}
-          recipientLatitude={destination?.latitude}
-          recipientLongitude={destination?.longitude}
-          companyId={companyId!}
-          consumerId={consumerId!}
-          deliveryId={null}
-          status='Available'
-        />
       )}
-      {routeVisible && (
-        <View className='mt-2 py-2 bg-orange-500 rounded-md flex justify-center items-center pb-8'>
-          <Text className='text-base text-bold text-white'>Distância Total: {distance ? `${distance.toFixed(2)} km` : 'N/A'}</Text>
-          <Text className='text-base text-bold text-white'>Duração Estimada: {duration ? `${duration.toFixed(2)} min` : 'N/A'}</Text>
-          {stops.map((_, index) => (
-            <Text key={index} className='text-base'>
-              Tempo Estimado para Parada {index + 1}: {estimatedArrivalTimes[index] || 'N/A'}
-            </Text>
-          ))}
-        </View>
-      )}
+
+      {
+        modalOrderVisible && (
+          <ModalOrder
+            visible={modalOrderVisible}
+            onClose={() => setModalOrderVisible(false)}
+            handleSubmitModal={handleSubmitModal}
+            senderLatitude={origin?.latitude!}
+            senderLongitude={origin?.longitude!}
+            stopLatitude={modalData.stopLatitude}
+            stopLongitude={modalData.stopLongitude}
+            recipientLatitude={destination?.latitude}
+            recipientLongitude={destination?.longitude}
+            companyId={companyId!}
+            consumerId={consumerId!}
+            deliveryId={null}
+            status='Available'
+          />
+        )
+      }
+      {
+        modalWaitingAcceptDelivery && (
+          <ModalWaitingAcceptDelivery
+            visible={modalWaitingAcceptDelivery}
+            onCancel={handleCancelModalWaitingAcceptDelivery}
+          />
+        )
+      }
+      {
+        routeVisible && (
+          <View className='mt-2 py-2 bg-orange-500 rounded-md flex justify-center items-center pb-8'>
+            <Text className='text-base text-bold text-white'>Distância Total: {distance ? `${distance.toFixed(2)} km` : 'N/A'}</Text>
+            <Text className='text-base text-bold text-white'>Duração Estimada: {duration ? `${duration.toFixed(2)} min` : 'N/A'}</Text>
+            {stops.map((_, index) => (
+              <Text key={index} className='text-base'>
+                Tempo Estimado para Parada {index + 1}: {estimatedArrivalTimes[index] || 'N/A'}
+              </Text>
+            ))}
+          </View>
+        )
+      }
 
       {error && <Text className='absolute bottom-5 left-2 right-2 text-red-500 text-sm text-center'>{error}</Text>}
-    </View>
+    </View >
   );
 };
 

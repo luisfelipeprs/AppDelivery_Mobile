@@ -14,7 +14,7 @@ export default function Login() {
   const [userType, setUserType] = useState<'Company' | 'Consumer' | 'Driver'>('Consumer');
 
   useEffect(() => {
-    AsyncStorage.setItem('domain', "https://d3de-187-108-255-14.ngrok-free.app"); // domínio do backend
+    AsyncStorage.setItem('domain', "https://9904-187-108-255-14.ngrok-free.app"); // domínio do backend
     checkLogin();
   }, []);
 
