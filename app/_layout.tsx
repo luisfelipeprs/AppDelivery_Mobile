@@ -2,7 +2,7 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
-import { SessionProvider } from "./ctx";
+import { SessionProvider, useSession } from "./ctx";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -17,7 +17,7 @@ export const unstable_settings = {
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout () {
+export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     ...FontAwesome.font,
@@ -42,7 +42,7 @@ export default function RootLayout () {
 }
 import { Slot } from "expo-router";
 
-function RootLayoutNav () {
+function RootLayoutNav() {
   return (
     <SessionProvider>
       <Slot />
