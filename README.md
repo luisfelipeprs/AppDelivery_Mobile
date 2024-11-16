@@ -1,4 +1,4 @@
-# Welcome to your Expo app 👋
+# App Mobile de Delivery
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
@@ -14,6 +14,11 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 
    ```bash
     npx expo start
+   ```
+3. Backend repository
+
+   ```bash
+    https://github.com/luisfelipeprs/AppDelivery_Backend
    ```
 
 In the output, you'll find options to open the app in a
